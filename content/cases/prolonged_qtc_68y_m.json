@@ -1,0 +1,7 @@
+{
+  "id": "prolonged_qtc_68y_m",
+  "label": "male, adult_65_plus (QTc ~476 ms)",
+  "age_band": "adult_65_plus",
+  "sex": "male",
+  "intervals": {"HR_bpm": 68, "PR_ms": 180, "QRS_ms": 104, "QT_ms": 460, "RR_ms": 900}
+}
