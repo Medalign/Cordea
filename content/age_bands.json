@@ -1,0 +1,13 @@
+{
+  "bands": [
+    {"id": "neonate", "label": "0–28 days", "cohort": "paediatric"},
+    {"id": "infant", "label": "1–12 months", "cohort": "paediatric"},
+    {"id": "child_1_5", "label": "1–5 years", "cohort": "paediatric"},
+    {"id": "child_6_12", "label": "6–12 years", "cohort": "paediatric"},
+    {"id": "adolescent", "label": "13–17 years", "cohort": "paediatric"},
+    {"id": "adult_18_39", "label": "18–39 years", "cohort": "adult"},
+    {"id": "adult_40_64", "label": "40–64 years", "cohort": "adult"},
+    {"id": "adult_65_plus", "label": "65+ years", "cohort": "adult"}
+  ],
+  "sexes": ["male", "female"]
+}

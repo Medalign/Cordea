@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>ECG Assist — Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 16px; }
+    .banner { background:#111; color:#fff; padding:8px 12px; font-weight:600; margin-bottom:16px; }
+    .grid { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+    fieldset { border:1px solid #ccc; padding:12px; }
+    legend { font-weight:600; }
+    label { display:block; margin-top:8px; }
+    input, select, button { padding:6px; margin-top:4px; }
+    table { border-collapse: collapse; width:100%; margin-top:8px; }
+    th, td { border:1px solid #ddd; padding:6px; text-align:left; }
+    .green { background:#e7f7ea; }
+    .amber { background:#fff6e6; }
+    .red { background:#fde7e7; }
+    .grey { background:#f2f2f2; }
+    .row { display:flex; gap:8px; align-items:end; flex-wrap:wrap; }
+    .mt8 { margin-top:8px; }
+    .muted { color:#666; font-size:12px; }
+  </style>
+</head>
+<body>
+  <div class="banner">DEMONSTRATION ONLY — SYNTHETIC DATA — NOT FOR CLINICAL USE.</div>
+
+  <div class="grid">
+    <fieldset>
+      <legend>Synthetic cases</legend>
+      <div class="row">
+        <label>Case
+          <select id="caseSelect"></select>
+        </label>
+        <button id="loadCase">Load case</button>
+      </div>
+      <div class="mt8">
+        <img id="trendImg" alt="TrendView" style="max-width:100%; display:none;" />
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>GuardRail — clinician-entered intervals</legend>
+      <div class="row">
+        <label>Age band
+          <select id="ageBand"></select>
+        </label>
+        <label>Sex
+          <select id="sex">
+            <option value="male">male</option>
+            <option value="female">female</option>
+          </select>
+        </label>
+        <label>QTc method
+          <select id="qtcMethod">
+            <option>Bazett</option>
+            <option>Fridericia</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="row mt8">
+        <label>HR_bpm <input id="HR_bpm" type="number" inputmode="numeric" /></label>
+        <label>PR_ms <input id="PR_ms" type="number" inputmode="numeric" /></label>
+        <label>QRS_ms <input id="QRS_ms" type="number" inputmode="numeric" /></label>
+        <label>QT_ms <input id="QT_ms" type="number" inputmode="numeric" /></label>
+        <label>RR_ms <input id="RR_ms" type="number" inputmode="numeric" /></label>
+      </div>
+
+      <div class="row mt8">
+        <button id="evaluate">Evaluate</button>
+        <span id="computed" class="muted"></span>
+      </div>
+
+      <table id="results" class="mt8">
+        <thead><tr><th>Parameter</th><th>Status</th><th>Rationale</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="muted">Green = in-range, Amber = near limits, Red = out-of-range; QTc also scored vs percentiles.</div>
+    </fieldset>
+  </div>
+
+  <script>
+    const el = id => document.getElementById(id);
+
+    async function getJSON(url) {
+      const r = await fetch(url);
+      if (!r.ok) throw new Error(await r.text());
+      return r.json();
+    }
+
+    function option(value, text) {
+      const o = document.createElement('option');
+      o.value = value; o.textContent = text ?? value;
+      return o;
+    }
+
+    function setResults(report) {
+      const tbody = el('results').querySelector('tbody');
+      tbody.innerHTML = '';
+      Object.entries(report).forEach(([k, v]) => {
+        const tr = document.createElement('tr');
+        tr.className = (v.status || 'grey');
+        tr.innerHTML = `<td>${k}</td><td>${(v.status || 'grey').toUpperCase()}</td><td>${v.rationale || ''}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function valNum(id) {
+      const v = el(id).value.trim();
+      return v === '' ? null : Number(v);
+    }
+
+    function computeQTcJS(qt, rr, method) {
+      if (qt == null || rr == null || rr <= 0) return null;
+      const rr_s = rr / 1000;
+      const m = (method || 'Bazett').toLowerCase();
+      if (m.startsWith('fri')) return Math.round(qt / Math.cbrt(rr_s));
+      return Math.round(qt / Math.sqrt(rr_s));
+    }
+
+    async function init() {
+      const meta = await getJSON('/api/meta');
+      const ageSel = el('ageBand');
+      meta.ageBands.forEach(b => ageSel.appendChild(option(b.id, `${b.label} (${b.cohort})`)));
+
+      const cases = await getJSON('/api/cases');
+      const caseSel = el('caseSelect');
+      cases.cases.forEach(c => caseSel.appendChild(option(c.id, `${c.id} — ${c.sex}, ${c.ageBand}${c.qtc_ms ? ' (QTc '+c.qtc_ms+' ms)' : ''}`)));
+
+      // default
+      if (meta.ageBands.length) ageSel.value = meta.ageBands[0].id;
+
+      el('loadCase').onclick = async () => {
+        const id = caseSel.value;
+        const c = await getJSON(`/api/case/${encodeURIComponent(id)}`);
+
+        // Demographics
+        el('ageBand').value = c.ageBand;
+        el('sex').value = c.sex;
+
+        // Encounter values
+        const e = c.encounter || {};
+        ['HR_bpm','PR_ms','QRS_ms','QT_ms','RR_ms'].forEach(k => { if (e[k] != null) el(k).value = String(e[k]); });
+
+        // QTc method if present
+        if (e.QTc_method) el('qtcMethod').value = e.QTc_method;
+
+        // Trend image
+        const img = el('trendImg');
+        img.src = `/api/trend_plot/${encodeURIComponent(id)}.png?ts=${Date.now()}`;
+        img.style.display = 'block';
+
+        // Auto-evaluate for instant demo
+        await evaluate();
+      };
+
+      el('evaluate').onclick = evaluate;
+
+      // Live QTc preview
+      ['QT_ms','RR_ms','qtcMethod'].forEach(id => {
+        el(id).addEventListener('input', () => {
+          const qtc = computeQTcJS(valNum('QT_ms'), valNum('RR_ms'), el('qtcMethod').value);
+          el('computed').textContent = qtc ? `Computed QTc: ${qtc} ms (preview)` : '';
+        });
+      });
+    }
+
+    async function evaluate() {
+      const payload = {
+        ageBand: el('ageBand').value,
+        sex: el('sex').value,
+        encounter: {
+          HR_bpm: valNum('HR_bpm'),
+          PR_ms: valNum('PR_ms'),
+          QRS_ms: valNum('QRS_ms'),
+          QT_ms: valNum('QT_ms'),
+          RR_ms: valNum('RR_ms'),
+          QTc_method: el('qtcMethod').value
+        }
+      };
+      Object.keys(payload.encounter).forEach(k => payload.encounter[k] == null && delete payload.encounter[k]);
+
+      const res = await fetch('/api/guardrail', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      setResults(data.report || {});
+      const band =
+        data.report?.QTc_ms?.detail?.percentile_status === 'red' ? '≥99th %ile' :
+        data.report?.QTc_ms?.detail?.percentile_status === 'amber' ? '≥90th %ile' : '<90th %ile';
+      el('computed').textContent = data.computed?.QTc_ms ? `Computed QTc: ${data.computed.QTc_ms} ms (${band})` : '';
+    }
+
+    init().catch(err => alert(err));
+  </script>
+</body>
+</html>

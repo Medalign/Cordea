@@ -1,0 +1,299 @@
+{
+  "HR_bpm": {
+    "neonate": {
+      "male": {
+        "min": 100,
+        "typ": 130,
+        "max": 160
+      },
+      "female": {
+        "min": 100,
+        "typ": 130,
+        "max": 160
+      }
+    },
+    "infant": {
+      "male": {
+        "min": 90,
+        "typ": 120,
+        "max": 150
+      },
+      "female": {
+        "min": 90,
+        "typ": 120,
+        "max": 150
+      }
+    },
+    "child_1_5": {
+      "male": {
+        "min": 80,
+        "typ": 100,
+        "max": 120
+      },
+      "female": {
+        "min": 80,
+        "typ": 100,
+        "max": 120
+      }
+    },
+    "child_6_12": {
+      "male": {
+        "min": 70,
+        "typ": 90,
+        "max": 110
+      },
+      "female": {
+        "min": 70,
+        "typ": 90,
+        "max": 110
+      }
+    },
+    "adolescent": {
+      "male": {
+        "min": 60,
+        "typ": 80,
+        "max": 100
+      },
+      "female": {
+        "min": 60,
+        "typ": 80,
+        "max": 100
+      }
+    },
+    "adult_18_39": {
+      "male": {
+        "min": 60,
+        "typ": 72,
+        "max": 100
+      },
+      "female": {
+        "min": 60,
+        "typ": 74,
+        "max": 100
+      }
+    },
+    "adult_40_64": {
+      "male": {
+        "min": 58,
+        "typ": 70,
+        "max": 98
+      },
+      "female": {
+        "min": 58,
+        "typ": 72,
+        "max": 98
+      }
+    },
+    "adult_65_plus": {
+      "male": {
+        "min": 55,
+        "typ": 70,
+        "max": 100
+      },
+      "female": {
+        "min": 55,
+        "typ": 72,
+        "max": 100
+      }
+    }
+  },
+  "PR_ms": {
+    "child_6_12": {
+      "male": {
+        "min": 90,
+        "typ": 120,
+        "max": 160
+      },
+      "female": {
+        "min": 90,
+        "typ": 120,
+        "max": 160
+      }
+    },
+    "adolescent": {
+      "male": {
+        "min": 100,
+        "typ": 140,
+        "max": 180
+      },
+      "female": {
+        "min": 100,
+        "typ": 140,
+        "max": 180
+      }
+    },
+    "adult_18_39": {
+      "male": {
+        "min": 120,
+        "typ": 160,
+        "max": 200
+      },
+      "female": {
+        "min": 120,
+        "typ": 160,
+        "max": 200
+      }
+    },
+    "adult_40_64": {
+      "male": {
+        "min": 120,
+        "typ": 165,
+        "max": 205
+      },
+      "female": {
+        "min": 120,
+        "typ": 165,
+        "max": 205
+      }
+    },
+    "adult_65_plus": {
+      "male": {
+        "min": 120,
+        "typ": 170,
+        "max": 210
+      },
+      "female": {
+        "min": 120,
+        "typ": 170,
+        "max": 210
+      }
+    }
+  },
+  "QRS_ms": {
+    "adolescent": {
+      "male": {
+        "min": 60,
+        "typ": 80,
+        "max": 100
+      },
+      "female": {
+        "min": 60,
+        "typ": 80,
+        "max": 100
+      }
+    },
+    "adult_18_39": {
+      "male": {
+        "min": 60,
+        "typ": 90,
+        "max": 110
+      },
+      "female": {
+        "min": 60,
+        "typ": 90,
+        "max": 110
+      }
+    },
+    "adult_40_64": {
+      "male": {
+        "min": 60,
+        "typ": 92,
+        "max": 112
+      },
+      "female": {
+        "min": 60,
+        "typ": 92,
+        "max": 112
+      }
+    },
+    "adult_65_plus": {
+      "male": {
+        "min": 60,
+        "typ": 95,
+        "max": 115
+      },
+      "female": {
+        "min": 60,
+        "typ": 95,
+        "max": 115
+      }
+    },
+    "child_6_12": {
+      "male": {
+        "min": 60,
+        "typ": 80,
+        "max": 100
+      },
+      "female": {
+        "min": 60,
+        "typ": 80,
+        "max": 100
+      }
+    }
+  },
+  "QTc_ms": {
+    "child_6_12": {
+      "male": {
+        "min": 360,
+        "typ": 420,
+        "max": 470
+      },
+      "female": {
+        "min": 360,
+        "typ": 420,
+        "max": 470
+      }
+    },
+    "adolescent": {
+      "male": {
+        "min": 360,
+        "typ": 420,
+        "max": 460
+      },
+      "female": {
+        "min": 370,
+        "typ": 430,
+        "max": 470
+      }
+    },
+    "adult_18_39": {
+      "male": {
+        "min": 360,
+        "typ": 420,
+        "max": 450
+      },
+      "female": {
+        "min": 370,
+        "typ": 430,
+        "max": 470
+      }
+    },
+    "adult_40_64": {
+      "male": {
+        "min": 360,
+        "typ": 430,
+        "max": 455
+      },
+      "female": {
+        "min": 370,
+        "typ": 440,
+        "max": 475
+      }
+    },
+    "adult_65_plus": {
+      "male": {
+        "min": 360,
+        "typ": 430,
+        "max": 460
+      },
+      "female": {
+        "min": 370,
+        "typ": 440,
+        "max": 480
+      }
+    }
+  },
+  "notes": {
+    "juvenile_t_wave_bands": [
+      "neonate",
+      "infant",
+      "child_1_5",
+      "child_6_12"
+    ],
+    "adult_specific_notes": [
+      "adult_18_39",
+      "adult_40_64",
+      "adult_65_plus"
+    ]
+  }
+}
