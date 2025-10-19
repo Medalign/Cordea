@@ -1,0 +1,7 @@
+{
+  "id": "paeds_example_neonate",
+  "label": "male, neonate_0_28d (synthetic)",
+  "age_band": "neonate_0_28d",
+  "sex": "male",
+  "intervals": {"HR_bpm": 140, "PR_ms": 120, "QRS_ms": 60, "QT_ms": 320, "RR_ms": 430}
+}

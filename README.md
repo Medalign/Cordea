@@ -17,3 +17,15 @@ Plots **serial QTc values** against **age- and sex-specific percentile bands** (
 ### ⚙️ Run locally
 ```bash
 uvicorn backend.server:app --reload
+
+### Run (demo)
+
+export ECG_TOKEN_ADMIN=admin-token
+export ECG_TOKEN_CLINICIAN=clinician-token
+export ECG_TOKEN_OBSERVER=observer-token
+export ECG_REF_VERSION=1.0.0
+uvicorn backend.server:app --reload
+
+### Tokens
+
+Pass as HTTP header: `Authorization: clinician-token`
