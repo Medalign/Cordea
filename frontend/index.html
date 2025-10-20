@@ -1,44 +1,12 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8"/>
-  <title>ECG-Assist — Demonstration</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <link rel="stylesheet" href="assets/style.css"/>
-</head>
-<body>
-  <div class="banner">DEMONSTRATION ONLY — SYNTHETIC DATA — NOT FOR CLINICAL USE.</div>
-
-  <main>
-    <section aria-labelledby="quick-check-h">
-      <h2 id="quick-check-h">Quick Check (GuardRail)</h2>
-      <form id="score-form">
-        <label>Age band <input name="age_band" value="adult_65_plus" required></label>
-        <label>Sex <select name="sex"><option>male</option><option>female</option></select></label>
-        <label>QT method <input name="qtc_method" value="fridericia" readonly></label>
-        <label>HR_bpm <input name="HR_bpm" type="number" step="1" value="68"></label>
-        <label>PR_ms <input name="PR_ms" type="number" step="1" value="180"></label>
-        <label>QRS_ms <input name="QRS_ms" type="number" step="1" value="104"></label>
-        <label>QT_ms <input name="QT_ms" type="number" step="1" value="460"></label>
-        <label>RR_ms <input name="RR_ms" type="number" step="1" value="900"></label>
-        <button type="submit">Evaluate</button>
-      </form>
-      <pre id="score-out"></pre>
-    </section>
-
-    <section aria-labelledby="trend-h">
-      <h2 id="trend-h">TrendView (upload CSV or JSON)</h2>
-      <form id="trend-form">
-        <label>Age band <input name="age_band" value="adult_65_plus" required></label>
-        <label>Sex <select name="sex"><option>male</option><option>female</option></select></label>
-        <input type="file" id="trend-file" accept=".csv,.json"/>
-        <button type="button" id="upload-csv">Upload CSV</button>
-        <button type="button" id="upload-json">Upload JSON</button>
-      </form>
-      <pre id="trend-out"></pre>
-    </section>
-  </main>
-
-  <script src="assets/app.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DxLM ECG Assist — Lifespan Demo</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
