@@ -14,7 +14,12 @@ const STATUS_LABELS: Record<Status, string> = {
 };
 
 const RAGChip: React.FC<RAGChipProps> = ({ status, label }) => {
-  return <span className={`badge ${status}`}>{label ?? STATUS_LABELS[status]}</span>;
+  const text = label ?? STATUS_LABELS[status];
+  return (
+    <span className={`badge ${status}`} aria-label={text} title={text}>
+      {text}
+    </span>
+  );
 };
 
 export default RAGChip;

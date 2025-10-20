@@ -33,12 +33,7 @@ export interface MetricEval {
 
 export interface ScoreResponse {
   QTc_ms: number;
-  evaluations: {
-    HR_bpm?: MetricEval;
-    PR_ms?: MetricEval;
-    QRS_ms?: MetricEval;
-    QTc_ms?: MetricEval;
-  };
+  evaluations: Partial<Record<keyof IntervalSet | "QTc_ms", MetricEval>>;
   summary: string;
   method: QTcMethod;
   notes?: string[];
