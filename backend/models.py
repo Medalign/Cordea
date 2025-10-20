@@ -23,8 +23,15 @@ class Assessment(BaseModel):
     status: Literal["GREEN", "AMBER", "RED"]
     rationale: str
 
+# This new model defines the structure for the 'computed' dictionary
+class ScoreComputed(BaseModel):
+    # What your logic actually returns:
+    QTc_ms: Optional[float] = None     # accept 404.0
+    percentile: Optional[str] = None   # accept "<50th"
+    ref_version: Optional[str] = None  # accept "1.0.0"
+
 class ScoreResponse(BaseModel):
-    computed: Dict[str, Optional[str]]
+    computed: ScoreComputed  # Changed from Dict[str, Optional[float]]
     assessments: List[Assessment]
     red_flags: List[str]
     disclaimer: str
@@ -42,7 +49,7 @@ class TrendSeriesRequest(BaseModel):
 
 class TrendPoint(BaseModel):
     timestamp: datetime
-    QTc_ms: float
+    QTc_ms: float  # This was already float
     percentile: Optional[str] = None
 
 class TrendSeriesResponse(BaseModel):

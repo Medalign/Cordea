@@ -26,10 +26,16 @@ export interface TrendReading {
 }
 
 export interface TrendSeriesRequest {
-  age_band: string;
-  sex: Sex;
-  readings: TrendReading[];
-  new_reading: TrendReading;
+  // existing backend shape
+  age_band?: string;
+  sex: "male" | "female";
+  readings?: TrendReading[];
+
+  // UI convenience fields (camelCase)
+  ageBand?: string;
+  series?: any[];
+  newValue?: number;
+  readingDate?: string;
 }
 
 export interface TrendSeriesResponse {

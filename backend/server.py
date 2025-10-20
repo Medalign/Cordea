@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Header, HTTPException, UploadFile, File
+from fastapi import FastAPI, Header, HTTPException, UploadFile, File, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from typing import Optional
@@ -27,6 +27,10 @@ app.add_middleware(
 )
 
 DEMO_DISCLAIMER = "DEMONSTRATION ONLY — SYNTHETIC DATA — NOT FOR CLINICAL USE."
+
+@app.exception_handler(Exception)
+async def unhandled_exc(_: Request, exc: Exception):
+    return JSONResponse(status_code=500, content={"detail": str(exc)})
 
 def require_role(token: Optional[str], allowed):
     role = role_from_token(token or "")
