@@ -59,11 +59,11 @@
           <input name="QRS_ms" type="number" inputmode="numeric" />
         </label>
         <label class="field">
-          <span>QT interval (ms)</span>
+          <span>QT interval (ms) <em class="hint">350–450</em></span>
           <input name="QT_ms" type="number" inputmode="numeric" />
         </label>
         <label class="field">
-          <span>RR interval (ms)</span>
+          <span>RR interval (ms) <em class="hint">600–1200</em></span>
           <input name="RR_ms" type="number" inputmode="numeric" />
         </label>
 
@@ -82,6 +82,8 @@
 
       <!-- GuardRail Result -->
       <div id="guardrail-result" class="result"></div>
+      <!-- GuardRail recommendations (filled by JS) -->
+      <div id="guardrail-recs" class="recs"></div>
     </section>
 
     <!-- TrendView -->
@@ -134,7 +136,20 @@
       <p id="trend-error" class="error hide"></p>
 
       <!-- Trend Result -->
-      <div id="trend-result" class="result"></div>
+      <!-- Band chip & narrative -->
+      <div class="trend-meta">
+        <span id="trend-band-chip" class="chip chip-muted">—</span>
+        <p id="trend-narrative" class="narrative">—</p>
+      </div>
+      <!-- Export actions -->
+      <div class="actions">
+        <button id="export-csv" class="btn-secondary" type="button">Export CSV</button>
+        <button id="print-report" class="btn-secondary" type="button">Print report</button>
+      </div>
+      <div id="trend-result" class="result">
+          <!-- Chart canvas already present; add overlay tooltip container -->
+          <div id="chart-tooltip" class="chart-tooltip" style="display:none;"></div>
+      </div>
     </section>
   </main>
 
