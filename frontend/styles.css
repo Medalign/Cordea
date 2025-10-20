@@ -148,4 +148,3 @@ button.success {
 .chart-title { font-weight: 600; margin: .25rem 0 .5rem; }
 .legend { display:flex; gap:1rem; justify-content:flex-end; font-size:.85rem; color:#374151; }
 .legend .swatch { display:inline-block; width:.75rem; height:.5rem; border:1px solid #cbd5e1; margin-right:.3rem; vertical-align:middle; }
-
