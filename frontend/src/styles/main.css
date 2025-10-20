@@ -34,6 +34,15 @@ main {
   margin: 0 auto 3rem auto;
 }
 
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
 .skip-link {
   position: absolute;
   left: -999px;
@@ -108,6 +117,11 @@ button:disabled {
   cursor: not-allowed;
 }
 
+button:focus-visible {
+  outline: 3px solid #0b3d60;
+  outline-offset: 2px;
+}
+
 .form-grid {
   display: grid;
   gap: 1rem;
@@ -132,6 +146,14 @@ button:disabled {
   color: #a3202a;
   font-size: 0.95rem;
   margin-top: 0.5rem;
+}
+
+.input-error {
+  border-color: #a3202a;
+}
+
+.input-error:focus {
+  outline-color: #a3202a;
 }
 
 .table-container {
@@ -174,6 +196,33 @@ th, td {
   color: #a3202a;
 }
 
+.health-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background-color: #dde3ea;
+  color: #0b3d60;
+}
+
+.health-chip.healthy {
+  background-color: #e1f6e8;
+  color: #1a7f3d;
+}
+
+.health-chip.unhealthy {
+  background-color: #fbe6e8;
+  color: #a3202a;
+}
+
+.health-chip.checking {
+  background-color: #fff4d6;
+  color: #a05a00;
+}
+
 .banner {
   background-color: #a3202a;
   color: white;
@@ -201,6 +250,16 @@ th, td {
   border-left: 4px solid #1f8ad1;
   background-color: #edf6fd;
   border-radius: 8px;
+}
+
+.alert-strip {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  border-left: 4px solid #a3202a;
+  background-color: #fbe6e8;
+  color: #7d1c24;
+  border-radius: 8px;
+  font-weight: 600;
 }
 
 .status-grid {
@@ -242,4 +301,60 @@ th, td {
   margin-top: 1rem;
   font-weight: 600;
   color: #0b3d60;
+}
+
+.section-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.section-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.status-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.fieldset {
+  border: 1px solid #dde3ea;
+  border-radius: 12px;
+  padding: 1rem;
+  margin: 0;
+}
+
+.fieldset legend {
+  font-weight: 600;
+  padding: 0 0.25rem;
+  color: #0b3d60;
+}
+
+.radio-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.radio-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 500;
 }

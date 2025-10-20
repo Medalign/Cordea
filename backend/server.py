@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Header, HTTPException, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from typing import Optional
 from .models import ScoreRequest, ScoreResponse, TrendSeriesRequest, TrendSeriesResponse
@@ -13,6 +14,17 @@ from .adapters.json_adapter import load_json
 from datetime import datetime
 
 app = FastAPI(title="ECG-Assist Platform API", version="0.1.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 DEMO_DISCLAIMER = "DEMONSTRATION ONLY — SYNTHETIC DATA — NOT FOR CLINICAL USE."
 

@@ -17,6 +17,7 @@ const TrendView: React.FC = () => {
   const [result, setResult] = useState<TrendResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [valueHasError, setValueHasError] = useState(false);
 
   const selectedCase = useMemo(
     () => TREND_CASES.find((item) => item.id === selectedCaseId) ?? TREND_CASES[0],
@@ -30,6 +31,7 @@ const TrendView: React.FC = () => {
     setError(null);
     setNewValue("");
     setNewDate(toISODate(new Date()));
+    setValueHasError(false);
   }, [selectedCase]);
 
   if (!selectedCase) {
@@ -40,15 +42,18 @@ const TrendView: React.FC = () => {
     event.preventDefault();
     setError(null);
     setResult(null);
+    setValueHasError(false);
 
-    if (!newValue) {
+    if (!newValue.trim()) {
       setError("Enter the new QTc value before submitting.");
+      setValueHasError(true);
       return;
     }
 
     const valueNumber = Number(newValue);
-    if (Number.isNaN(valueNumber)) {
+    if (!Number.isFinite(valueNumber)) {
       setError("QTc value must be a number.");
+      setValueHasError(true);
       return;
     }
 
@@ -68,9 +73,9 @@ const TrendView: React.FC = () => {
       setNewDate(toISODate(new Date()));
     } catch (err) {
       if (err instanceof Error) {
-        setError(err.message);
+        setError(`Could not evaluate trend: ${err.message}`);
       } else {
-        setError("Unable to evaluate the new reading right now.");
+        setError("Could not evaluate trend: unexpected error");
       }
     } finally {
       setIsSubmitting(false);
@@ -92,13 +97,13 @@ const TrendView: React.FC = () => {
     const maxValue = Math.max(...values, ...bandValues) + 10;
 
     const rangeTime = maxTime - minTime;
-    const rangeValue = maxValue - minValue;
+    const rangeValue = maxValue - minValue || 1;
 
     const width = 640;
     const height = 320;
 
-    const plotWidth = width - 80;
-    const plotHeight = height - 40;
+    const plotWidth = width - 100;
+    const plotHeight = height - 60;
 
     const toX = (time: number) => {
       if (rangeTime === 0) {
@@ -107,9 +112,6 @@ const TrendView: React.FC = () => {
       return ((time - minTime) / rangeTime) * plotWidth;
     };
     const toY = (value: number) => {
-      if (rangeValue === 0) {
-        return plotHeight / 2;
-      }
       return plotHeight - ((value - minValue) / rangeValue) * plotHeight;
     };
 
@@ -158,6 +160,7 @@ const TrendView: React.FC = () => {
               id="case"
               value={selectedCaseId}
               onChange={(event) => setSelectedCaseId(event.target.value)}
+              disabled={isSubmitting}
             >
               {TREND_CASES.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -190,7 +193,7 @@ const TrendView: React.FC = () => {
           </table>
         </div>
 
-        <form onSubmit={handleSubmit} className="form-grid two-column" style={{ marginTop: "1.5rem" }}>
+        <form onSubmit={handleSubmit} className="form-grid two-column" style={{ marginTop: "1.5rem" }} noValidate>
           <div>
             <label htmlFor="newDate">Reading date</label>
             <input
@@ -199,6 +202,7 @@ const TrendView: React.FC = () => {
               value={newDate}
               max={toISODate(new Date())}
               onChange={(event) => setNewDate(event.target.value)}
+              disabled={isSubmitting}
             />
           </div>
           <div>
@@ -208,20 +212,20 @@ const TrendView: React.FC = () => {
               type="number"
               inputMode="numeric"
               value={newValue}
-              onChange={(event) => setNewValue(event.target.value)}
+              onChange={(event) => {
+                setNewValue(event.target.value);
+                if (valueHasError) {
+                  setValueHasError(false);
+                }
+              }}
               placeholder="e.g. 485"
               min={0}
+              className={valueHasError ? "input-error" : undefined}
+              aria-invalid={valueHasError}
+              required
             />
           </div>
-          <div
-            style={{
-              gridColumn: "1 / -1",
-              display: "flex",
-              gap: "1rem",
-              alignItems: "center",
-              flexWrap: "wrap",
-            }}
-          >
+          <div className="form-actions">
             <button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Submitting…" : "Evaluate new reading"}
             </button>
@@ -234,12 +238,18 @@ const TrendView: React.FC = () => {
             <strong>Latest assessment:</strong>
             <p style={{ margin: "0.5rem 0 0" }}>{result.message}</p>
             <p style={{ margin: "0.5rem 0 0" }}>
-              Recorded on <strong>{result.recordedOn}</strong>; change from baseline:
+              Recorded on <strong>{result.recordedOn}</strong>; delta from baseline:
               <strong> {result.delta_ms} ms</strong> (band: <strong>{result.band}</strong>).
             </p>
           </div>
         )}
       </div>
+
+      {result?.band === ">p99" && (
+        <div className="alert-strip" role="alert">
+          Latest QTc exceeds the 99th centile reference band.
+        </div>
+      )}
 
       {chartData && (
         <div className="chart-container">
@@ -268,7 +278,7 @@ const TrendView: React.FC = () => {
             height={chartData.height}
             style={{ maxWidth: "100%", background: "#ffffff", borderRadius: "12px", border: "1px solid #dde3ea" }}
           >
-            <g transform="translate(40,20)">
+            <g transform="translate(50,30)">
               <rect
                 x={0}
                 y={0}
@@ -322,12 +332,20 @@ const TrendView: React.FC = () => {
                 stroke="#b8c4d1"
               />
               <line x1={0} x2={0} y1={0} y2={chartData.plotHeight} stroke="#b8c4d1" />
-              <text x={0} y={chartData.plotHeight + 20} fill="#3d5467" fontSize="12">
+              <text
+                transform={`translate(${-35} ${chartData.plotHeight / 2}) rotate(-90)`}
+                fill="#3d5467"
+                fontSize="12"
+                textAnchor="middle"
+              >
+                QTc (ms)
+              </text>
+              <text x={0} y={chartData.plotHeight + 24} fill="#3d5467" fontSize="12">
                 {new Date(chartData.minTime).toLocaleDateString()}
               </text>
               <text
                 x={chartData.plotWidth}
-                y={chartData.plotHeight + 20}
+                y={chartData.plotHeight + 24}
                 fill="#3d5467"
                 fontSize="12"
                 textAnchor="end"
@@ -342,7 +360,7 @@ const TrendView: React.FC = () => {
                 y={chartData.plotHeight}
                 fill="#3d5467"
                 fontSize="12"
-                dy={16}
+                dy={18}
               >
                 {Math.round(chartData.minValue)} ms
               </text>
