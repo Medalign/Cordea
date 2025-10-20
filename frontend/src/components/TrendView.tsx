@@ -230,7 +230,7 @@ const TrendView: React.FC = () => {
         </form>
 
         {result && (
-          <div className="summary-box">
+          <div className="summary-box" role="status" aria-live="polite">
             <strong>Latest assessment:</strong>
             <p style={{ margin: "0.5rem 0 0" }}>{result.message}</p>
             <p style={{ margin: "0.5rem 0 0" }}>

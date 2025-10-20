@@ -213,10 +213,16 @@ const GuardRailForm: React.FC = () => {
       </form>
 
       {result && (
-        <div className="card" style={{ marginTop: "1.5rem" }}>
+        <div
+          className="card"
+          style={{ marginTop: "1.5rem" }}
+          role="region"
+          aria-live="polite"
+          aria-labelledby="guardrail-results-title"
+        >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", gap: "1rem", flexWrap: "wrap" }}>
             <div>
-              <h3>Results</h3>
+              <h3 id="guardrail-results-title">Results</h3>
               <p className="small-text">QTc reported using the {result.method} method.</p>
             </div>
             <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
@@ -242,7 +248,7 @@ const GuardRailForm: React.FC = () => {
             ))}
           </div>
 
-          <div className="summary-box">
+          <div className="summary-box" role="status" aria-live="polite">
             <strong>Encounter summary:</strong>
             <p style={{ margin: "0.5rem 0 0" }}>{result.summary}</p>
             <p style={{ margin: "0.5rem 0 0" }}>Calculated QTc: <strong>{result.QTc_ms} ms</strong>.</p>
