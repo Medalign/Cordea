@@ -1,161 +1,146 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ECG Assist — Clinician Demo</title>
-    <link rel="stylesheet" href="./styles.css" />
-  </head>
-  <body>
-    <header class="page-header">
-      <div>
-        <h1>ECG Assist</h1>
-        <p class="subtitle">Clinician demo tools for GuardRail and TrendView</p>
+<!doctype html><html lang="en"><head>
+  <meta charset="utf-8" />
+  <title>ECG Assist — GuardRail & TrendView</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="./styles.css" /></head><body>
+  <header class="topbar">
+    <div class="brand">
+      <h1>ECG Assist</h1>
+      <p class="subtitle">Clinician demo tools for GuardRail and TrendView</p>
+    </div>
+    <div class="api-box">
+      <span id="health-chip" class="chip chip--muted"></span>
+      <button id="health-retry" class="btn btn--pill">Retry</button>
+      <div class="api-base">
+        <label>API base</label>
+        <code id="api-base-pill"></code>
+        <input id="api-base-input" type="text" value="http://127.0.0.1:8000" />
       </div>
-      <div class="health-chip" id="health-chip" aria-live="polite">
-        <span class="chip-label" id="health-label">API: Checking…</span>
-        <button type="button" id="health-retry">Retry</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- GuardRail -->
+    <section class="card">
+      <div class="section-head">
+        <h2>GuardRail — Encounter review</h2>
+        <div class="section-actions">
+          <button id="guardrail-demo-adult" class="btn btn--ghost">Load Adult Demo</button>
+          <button id="guardrail-demo-paeds" class="btn btn--ghost">Load Paediatric Demo</button>
+        </div>
       </div>
-      <label class="api-base" for="api-base-input">
-        API base
-        <input
-          id="api-base-input"
-          type="url"
-          inputmode="url"
-          value="http://127.0.0.1:8000"
-          placeholder="http://127.0.0.1:8000"
-        />
-      </label>
-    </header>
 
-    <main>
-      <section class="card" aria-labelledby="guardrail-title">
-        <div class="card-header">
-          <h2 id="guardrail-title">GuardRail — Encounter review</h2>
-          <div class="card-actions">
-            <button type="button" id="guardrail-demo-adult">Load Adult Demo</button>
-            <button type="button" id="guardrail-demo-paeds">Load Paediatric Demo</button>
-          </div>
-        </div>
-        <form id="guardrail-form" class="form-grid">
-          <div class="form-field">
-            <label for="gr-age-band">Age band</label>
-            <select id="gr-age-band" name="age_band" required>
-              <option value="adult_18_39">Adult 18–39</option>
-              <option value="adult_40_64">Adult 40–64</option>
-              <option value="adult_65_plus" selected>Adult 65+</option>
-              <option value="paediatric">Paediatric</option>
-            </select>
-          </div>
-          <div class="form-field">
-            <label for="gr-sex">Sex</label>
-            <select id="gr-sex" name="sex" required>
-              <option value="male" selected>Male</option>
-              <option value="female">Female</option>
-            </select>
-          </div>
-          <div class="form-field">
-            <label for="gr-heart-rate">Heart rate (bpm)</label>
-            <input id="gr-heart-rate" name="heart_rate" type="number" inputmode="numeric" min="0" required />
-          </div>
-          <div class="form-field">
-            <label for="gr-pr">PR interval (ms)</label>
-            <input id="gr-pr" name="PR_ms" type="number" inputmode="numeric" min="0" required />
-          </div>
-          <div class="form-field">
-            <label for="gr-qrs">QRS duration (ms)</label>
-            <input id="gr-qrs" name="QRS_ms" type="number" inputmode="numeric" min="0" required />
-          </div>
-          <div class="form-field">
-            <label for="gr-qt">QT interval (ms)</label>
-            <input id="gr-qt" name="QT_ms" type="number" inputmode="numeric" min="0" required />
-          </div>
-          <div class="form-field">
-            <label for="gr-rr">RR interval (ms)</label>
-            <input id="gr-rr" name="RR_ms" type="number" inputmode="numeric" min="0" required />
-          </div>
-          <fieldset class="form-field form-field--full">
-            <legend>QTc method</legend>
-            <label class="radio">
-              <input type="radio" name="qtc_method" value="bazett" />
-              <span>Bazett</span>
-            </label>
-            <label class="radio">
-              <input type="radio" name="qtc_method" value="fridericia" checked />
-              <span>Fridericia</span>
-            </label>
-          </fieldset>
-          <div class="form-actions form-field--full">
-            <button type="submit" id="guardrail-submit">Evaluate encounter</button>
-          </div>
-        </form>
-        <div id="guardrail-error" class="error-text" role="alert" aria-live="polite"></div>
-        <div id="guardrail-result" class="result-container" aria-live="polite"></div>
-      </section>
+      <form id="guardrail-form" class="grid grid--two">
+        <label class="field">
+          <span>Age band</span>
+          <select name="age_band">
+            <option>Adult 65+</option>
+            <option>Adult 18–64</option>
+            <option>Child 10–12 yrs</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Sex</span>
+          <select name="sex">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Heart rate (bpm) <em class="hint">55–100</em></span>
+          <input name="heart_rate" type="number" inputmode="numeric" />
+        </label>
+        <label class="field">
+          <span>PR interval (ms) <em class="hint">120–210</em></span>
+          <input name="PR_ms" type="number" inputmode="numeric" />
+        </label>
+        <label class="field">
+          <span>QRS duration (ms) <em class="hint">60–115</em></span>
+          <input name="QRS_ms" type="number" inputmode="numeric" />
+        </label>
+        <label class="field">
+          <span>QT interval (ms)</span>
+          <input name="QT_ms" type="number" inputmode="numeric" />
+        </label>
+        <label class="field">
+          <span>RR interval (ms)</span>
+          <input name="RR_ms" type="number" inputmode="numeric" />
+        </label>
 
-      <section class="card" aria-labelledby="trend-title">
-        <div class="card-header">
-          <h2 id="trend-title">TrendView — Serial QTc monitoring</h2>
-        </div>
-        <div class="trend-controls">
-          <div class="form-field">
-            <label for="trend-age-band">Age band</label>
-            <select id="trend-age-band" required>
-              <option value="adult_18_39">Adult 18–39</option>
-              <option value="adult_40_64">Adult 40–64</option>
-              <option value="adult_65_plus" selected>Adult 65+</option>
-              <option value="paediatric">Paediatric</option>
-            </select>
-          </div>
-          <div class="form-field">
-            <label for="trend-sex">Sex</label>
-            <select id="trend-sex" required>
-              <option value="male" selected>Male</option>
-              <option value="female">Female</option>
-            </select>
-          </div>
-        </div>
+        <fieldset class="field field--row">
+          <legend>QTc method</legend>
+          <label><input type="radio" name="qtc_method" value="bazett" checked /> Bazett</label>
+          <label><input type="radio" name="qtc_method" value="fridericia" /> Fridericia</label>
+        </fieldset>
 
-        <div class="table-wrapper">
-          <table>
-            <caption>Historical QT and RR readings</caption>
-            <thead>
-              <tr>
-                <th scope="col">Date</th>
-                <th scope="col">QT (ms)</th>
-                <th scope="col">RR (ms)</th>
-              </tr>
-            </thead>
+        <div class="grid-row-end">
+          <button id="guardrail-submit" class="btn btn--primary" type="submit">Evaluate encounter</button>
+        </div>
+      </form>
+
+      <p id="guardrail-error" class="error hide"></p>
+
+      <!-- GuardRail Result -->
+      <div id="guardrail-result" class="result"></div>
+    </section>
+
+    <!-- TrendView -->
+    <section class="card">
+      <h2>TrendView — Serial QTc monitoring</h2>
+
+      <form id="trend-form" class="grid grid--two">
+        <label class="field">
+          <span>Age band</span>
+          <select id="trend-age-band">
+            <option>Adult 65+</option>
+            <option>Adult 18–64</option>
+            <option>Child 10–12 yrs</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Sex</span>
+          <select id="trend-sex">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </label>
+
+        <div class="history">
+          <h4>Historical QT and RR readings</h4>
+          <table class="table">
+            <thead><tr><th>Date</th><th>QT (ms)</th><th>RR (ms)</th></tr></thead>
             <tbody id="trend-table-body"></tbody>
           </table>
         </div>
 
-        <form id="trend-form" class="form-grid">
-          <div class="form-field">
-            <label for="trend-date">Reading date</label>
-            <input id="trend-date" type="date" required />
-          </div>
-          <div class="form-field">
-            <label for="trend-qt">New QT (ms)</label>
-            <input id="trend-qt" type="number" inputmode="numeric" min="0" required />
-          </div>
-          <div class="form-field">
-            <label for="trend-rr">RR (ms)</label>
-            <input id="trend-rr" type="number" inputmode="numeric" min="0" required />
-          </div>
-          <div class="form-actions form-field--full">
-            <button type="submit" id="trend-submit">Evaluate new reading</button>
-          </div>
-        </form>
-        <div id="trend-error" class="error-text" role="alert" aria-live="polite"></div>
-        <div id="trend-result" class="result-container" aria-live="polite"></div>
-      </section>
-    </main>
+        <label class="field">
+          <span>Reading date</span>
+          <input id="trend-date" type="text" placeholder="DD/MM/YYYY or YYYY-MM-DD" />
+        </label>
+        <label class="field">
+          <span>New QT (ms)</span>
+          <input id="trend-qt" type="number" inputmode="numeric" />
+        </label>
+        <label class="field">
+          <span>RR (ms)</span>
+          <input id="trend-rr" type="number" inputmode="numeric" />
+        </label>
 
-    <footer class="page-footer">
-      <small>FastAPI backend required at the configured base URL.</small>
-    </footer>
+        <div class="grid-row-end">
+          <button id="trend-submit" class="btn btn--primary" type="submit">Evaluate new reading</button>
+        </div>
+      </form>
 
-    <script defer src="./app.js"></script>
-  </body>
-</html>
+      <p id="trend-error" class="error hide"></p>
+
+      <!-- Trend Result -->
+      <div id="trend-result" class="result"></div>
+    </section>
+  </main>
+
+  <footer id="backend-warning" class="footer-warn">
+    FastAPI backend required at the configured base URL.
+  </footer>
+
+  <script src="./app.js"></script></body></html>
+
