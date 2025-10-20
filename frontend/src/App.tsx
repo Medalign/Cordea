@@ -24,9 +24,12 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <>
+    <div className="page-shell">
+      <a className="skip-link" href="#main-content">
+        Skip to main content
+      </a>
       <Banner />
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <header style={{ marginBottom: "2rem" }}>
           <h1>DxLM ECG Assist — Lifespan demo</h1>
           <p className="helper-text" style={{ marginBottom: "0.5rem" }}>
@@ -51,7 +54,7 @@ const App: React.FC = () => {
         <GuardRailForm />
         <TrendView />
       </main>
-    </>
+    </div>
   );
 };
 
