@@ -1,4 +1,4 @@
-// ==== Robust API client + UI for ECG-Assist (vanilla JS) ====
+// ==== Robust API client + UI for Cordea (vanilla JS) ====
 
 class ApiError extends Error {
   constructor(message, { status, statusText, detail } = {}) {
@@ -11,7 +11,9 @@ class ApiError extends Error {
 }
 
 const DEFAULT_API_BASE = "http://127.0.0.1:8000";
-const STORAGE_KEY = "ecgAssistApiBase";
+const STORAGE_KEY = "cordeaApiBase";
+
+document.title = "Cordea — Patient Review & Patient Trends";
 
 const healthChip = document.getElementById("health-chip");
 const healthRetryBtn = document.getElementById("health-retry");
@@ -19,7 +21,7 @@ const apiBaseInput = document.getElementById("api-base-input");
 const apiBasePill = document.getElementById("api-base-pill");
 const backendBanner = document.getElementById("backend-warning");
 
-// GuardRail DOM
+// Patient Review DOM
 const guardrailForm = document.getElementById("guardrail-form");
 const guardrailSubmit = document.getElementById("guardrail-submit");
 const guardrailAdultDemo = document.getElementById("guardrail-demo-adult");
@@ -27,7 +29,7 @@ const guardrailPaedsDemo = document.getElementById("guardrail-demo-paeds");
 const guardrailError = document.getElementById("guardrail-error");
 const guardrailResult = document.getElementById("guardrail-result");
 
-// Trend DOM
+// Patient Trends DOM
 const trendForm = document.getElementById("trend-form");
 const trendSubmit = document.getElementById("trend-submit");
 const trendError = document.getElementById("trend-error");
@@ -184,7 +186,7 @@ async function jsonPost(path, body) {
   return data;
 }
 
-// ===== GuardRail – Submit =====
+// ===== Patient Review – Submit =====
 guardrailAdultDemo.addEventListener("click", () => {
   fillGuardrailForm({
     age_band: "adult_65_plus", sex:"male",
@@ -250,7 +252,7 @@ function labelFromEnum(enumVal){
   return enumVal;
 }
 
-// ===== GuardRail – Render =====
+// ===== Patient Review – Render =====
 function renderGuardrailResult(result, payload) {
   clearContainer(guardrailResult);
   if (!result || typeof result !== "object") return;
@@ -367,7 +369,7 @@ function guessParamFromReason(r){
   return "";
 }
 
-// ===== Trend – Table + Submit =====
+// ===== Patient Trends – Table + Submit =====
 function updateTrendTable() {
   clearContainer(trendTableBody);
   historicalReadings.forEach(r => {
@@ -407,7 +409,7 @@ trendForm.addEventListener("submit", async (event) => {
   }
 });
 
-// ===== Trend – Render + Chart =====
+// ===== Patient Trends – Render + Chart =====
 function renderTrendResult(payload, result){
   clearContainer(trendResult);
   if (!result || typeof result !== "object") return;

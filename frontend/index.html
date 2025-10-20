@@ -1,12 +1,16 @@
-<!doctype html><html lang="en"><head>
+<!doctype html>
+<html lang="en">
+<head>
   <meta charset="utf-8" />
-  <title>ECG Assist — GuardRail & TrendView</title>
+  <title>Cordea — Patient Review & Patient Trends</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="./styles.css" /></head><body>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
   <header class="topbar">
     <div class="brand">
-      <h1>ECG Assist</h1>
-      <p class="subtitle">Clinician demo tools for GuardRail and TrendView</p>
+      <h1>Cordea</h1>
+      <p class="subtitle">Clinician demo tools for Patient Review and Patient Trends</p>
     </div>
     <div class="api-box">
       <span id="health-chip" class="chip chip--muted"></span>
@@ -20,10 +24,10 @@
   </header>
 
   <main class="container">
-    <!-- GuardRail -->
+    <!-- Patient Review -->
     <section class="card">
       <div class="section-head">
-        <h2>GuardRail — Encounter review</h2>
+        <h2>Patient Review — Encounter Summary</h2>
         <div class="section-actions">
           <button id="guardrail-demo-adult" class="btn btn--ghost">Load Adult Demo</button>
           <button id="guardrail-demo-paeds" class="btn btn--ghost">Load Paediatric Demo</button>
@@ -80,15 +84,15 @@
 
       <p id="guardrail-error" class="error hide"></p>
 
-      <!-- GuardRail Result -->
+      <!-- Patient Review Result -->
       <div id="guardrail-result" class="result"></div>
-      <!-- GuardRail recommendations (filled by JS) -->
+      <!-- Patient Review recommendations (filled by JS) -->
       <div id="guardrail-recs" class="recs"></div>
     </section>
 
-    <!-- TrendView -->
+    <!-- Patient Trends -->
     <section class="card">
-      <h2>TrendView — Serial QTc monitoring</h2>
+      <h2>Patient Trends — QTc Monitoring</h2>
 
       <form id="trend-form" class="grid grid--two">
         <label class="field">
@@ -157,5 +161,6 @@
     FastAPI backend required at the configured base URL.
   </footer>
 
-  <script src="./app.js"></script></body></html>
-
+  <script src="./app.js"></script>
+</body>
+</html>
