@@ -1,18 +1,20 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { evalTrend } from "../api/client";
-import type { TrendPoint, TrendSeriesRequest, TrendSeriesResponse } from "../api/types";
+import type { TrendReading, TrendSeriesRequest, TrendSeriesResponse } from "../api/types";
 import { TREND_CASES } from "../content/demoCases";
 
 type TrendResult = TrendSeriesResponse & { recordedOn: string };
 
 const toISODate = (date: Date) => date.toISOString().slice(0, 10);
-const sortReadings = (points: TrendPoint[]) =>
+const sortReadings = (points: TrendReading[]) =>
   [...points].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
 const TrendView: React.FC = () => {
   const [selectedCaseId, setSelectedCaseId] = useState<string>(TREND_CASES[0]?.id ?? "");
-  const [readings, setReadings] = useState<TrendPoint[]>(TREND_CASES[0]?.readings ?? []);
-  const [newValue, setNewValue] = useState<string>("");
+  const [readings, setReadings] = useState<TrendReading[]>(
+    () => TREND_CASES[0]?.readings.map((reading) => ({ ...reading })) ?? []
+  );
+  const [newQTcMs, setNewQTcMs] = useState<string>("");
   const [newDate, setNewDate] = useState<string>(toISODate(new Date()));
   const [result, setResult] = useState<TrendResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +31,7 @@ const TrendView: React.FC = () => {
     setReadings(sortReadings(selectedCase.readings.map((reading) => ({ ...reading }))));
     setResult(null);
     setError(null);
-    setNewValue("");
+    setNewQTcMs("");
     setNewDate(toISODate(new Date()));
     setValueHasError(false);
   }, [selectedCase]);
@@ -44,13 +46,13 @@ const TrendView: React.FC = () => {
     setResult(null);
     setValueHasError(false);
 
-    if (!newValue.trim()) {
+    if (!newQTcMs.trim()) {
       setError("Enter the new QTc value before submitting.");
       setValueHasError(true);
       return;
     }
 
-    const valueNumber = Number(newValue);
+    const valueNumber = Number(newQTcMs);
     if (!Number.isFinite(valueNumber)) {
       setError("QTc value must be a number.");
       setValueHasError(true);
@@ -60,16 +62,19 @@ const TrendView: React.FC = () => {
     const payload: TrendSeriesRequest = {
       age_band: selectedCase.age_band,
       sex: selectedCase.sex,
-      readings,
-      new_value: valueNumber,
+      readings: readings.map((reading) => ({ date: reading.date, qtc_ms: reading.qtc_ms })),
+      new_reading: {
+        date: newDate,
+        qtc_ms: valueNumber,
+      },
     };
 
     setIsSubmitting(true);
     try {
       const response = await evalTrend(payload);
-      setReadings((prev) => sortReadings([...prev, { date: newDate, value: valueNumber }]));
+      setReadings((prev) => sortReadings([...prev, { date: newDate, qtc_ms: valueNumber }]));
       setResult({ ...response, recordedOn: newDate });
-      setNewValue("");
+      setNewQTcMs("");
       setNewDate(toISODate(new Date()));
     } catch (err) {
       if (err instanceof Error) {
@@ -91,7 +96,7 @@ const TrendView: React.FC = () => {
     const minTime = Math.min(...timestamps);
     const maxTime = Math.max(...timestamps);
 
-    const values = combined.map((point) => point.value);
+    const values = combined.map((point) => point.qtc_ms);
     const bandValues = [selectedCase.bands.p50, selectedCase.bands.p90, selectedCase.bands.p99];
     const minValue = Math.min(...values, ...bandValues) - 10;
     const maxValue = Math.max(...values, ...bandValues) + 10;
@@ -118,7 +123,7 @@ const TrendView: React.FC = () => {
     const polylinePoints = combined
       .map((point) => {
         const x = toX(new Date(point.date).getTime());
-        const y = toY(point.value);
+        const y = toY(point.qtc_ms);
         return `${x},${y}`;
       })
       .join(" ");
@@ -135,7 +140,7 @@ const TrendView: React.FC = () => {
       polylinePoints,
       latestPoint: {
         x: toX(new Date(latestPoint.date).getTime()),
-        y: toY(latestPoint.value),
+        y: toY(latestPoint.qtc_ms),
       },
       minValue,
       maxValue,
@@ -186,7 +191,7 @@ const TrendView: React.FC = () => {
               {readings.map((reading, index) => (
                 <tr key={`${reading.date}-${index}`}>
                   <td>{reading.date}</td>
-                  <td>{reading.value}</td>
+                  <td>{reading.qtc_ms}</td>
                 </tr>
               ))}
             </tbody>
@@ -211,9 +216,9 @@ const TrendView: React.FC = () => {
               id="newValue"
               type="number"
               inputMode="numeric"
-              value={newValue}
+              value={newQTcMs}
               onChange={(event) => {
-                setNewValue(event.target.value);
+                setNewQTcMs(event.target.value);
                 if (valueHasError) {
                   setValueHasError(false);
                 }
@@ -236,10 +241,10 @@ const TrendView: React.FC = () => {
         {result && (
           <div className="summary-box" role="status" aria-live="polite">
             <strong>Latest assessment:</strong>
-            <p style={{ margin: "0.5rem 0 0" }}>{result.message}</p>
+            <p style={{ margin: "0.5rem 0 0" }}>{result.message ?? "No guidance returned."}</p>
             <p style={{ margin: "0.5rem 0 0" }}>
               Recorded on <strong>{result.recordedOn}</strong>; delta from baseline:
-              <strong> {result.delta_ms} ms</strong> (band: <strong>{result.band}</strong>).
+              <strong> {result.delta_ms ?? "—"} ms</strong> (band: <strong>{result.band ?? "—"}</strong>).
             </p>
           </div>
         )}
