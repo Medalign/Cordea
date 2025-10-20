@@ -1,23 +1,22 @@
 import React, { useMemo, useState } from "react";
-import { scoreGuardrail } from "../api/client";
-import type { IntervalSet, MetricEval, ScoreRequest, ScoreResponse } from "../api/types";
+import { scoreGuardRail } from "../api/client";
+import type { QTcMethod, ScoreRequest, ScoreResponse } from "../api/types";
 import { AGE_BAND_OPTIONS, QTC_METHOD_OPTIONS, SEX_OPTIONS } from "../content/options";
 import { demoGuardRailAdult, demoGuardRailChild } from "../content/demoCases";
 import RAGChip from "./RAGChip";
 
-type IntervalKey = keyof IntervalSet;
-type MetricKey = keyof ScoreResponse["evaluations"];
+type MetricEval = { status: "green" | "amber" | "red"; reason: string };
 
+const INTERVAL_KEYS = ["HR_bpm", "PR_ms", "QRS_ms", "QT_ms", "RR_ms"] as const;
+type IntervalKey = (typeof INTERVAL_KEYS)[number];
 type IntervalInputs = Record<IntervalKey, string>;
 
 type FormState = {
   age_band: ScoreRequest["age_band"];
   sex: ScoreRequest["sex"];
-  qtc_method: ScoreRequest["qtc_method"];
+  qtc_method: QTcMethod;
   intervals: IntervalInputs;
 };
-
-const INTERVAL_KEYS: IntervalKey[] = ["HR_bpm", "PR_ms", "QRS_ms", "QT_ms", "RR_ms"];
 
 const INTERVAL_LABELS: Record<IntervalKey, string> = {
   HR_bpm: "Heart rate (bpm)",
@@ -27,7 +26,7 @@ const INTERVAL_LABELS: Record<IntervalKey, string> = {
   RR_ms: "RR interval (ms)",
 };
 
-const METRIC_LABELS: Record<MetricKey, string> = {
+const METRIC_LABELS: Record<string, string> = {
   HR_bpm: "Heart rate (bpm)",
   PR_ms: "PR interval (ms)",
   QRS_ms: "QRS duration (ms)",
@@ -39,9 +38,10 @@ const METRIC_LABELS: Record<MetricKey, string> = {
 const toFormState = (demo: ScoreRequest): FormState => ({
   age_band: demo.age_band,
   sex: demo.sex,
-  qtc_method: demo.qtc_method,
+  qtc_method: (demo.intervals.qtc_method ?? "bazett") as QTcMethod,
   intervals: INTERVAL_KEYS.reduce((acc, key) => {
-    return { ...acc, [key]: demo.intervals[key] != null ? String(demo.intervals[key]) : "" };
+    const value = demo.intervals[key];
+    return { ...acc, [key]: value != null ? String(value) : "" };
   }, {} as IntervalInputs),
 });
 
@@ -54,17 +54,23 @@ const GuardRailForm: React.FC = () => {
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
 
   const evaluationEntries = useMemo(() => {
-    if (!result) return [] as Array<[MetricKey, MetricEval]>;
-    return (Object.entries(result.evaluations) as Array<[MetricKey, MetricEval | undefined]>)
+    if (!result) return [] as Array<[string, MetricEval]>;
+    const evaluations = (result.evaluations ?? {}) as Record<string, MetricEval | undefined>;
+    return Object.entries(evaluations)
       .filter(([, value]) => Boolean(value))
-      .map(([metric, value]) => [metric, value!] as [MetricKey, MetricEval]);
+      .map(([metric, value]) => [metric, value!] as [string, MetricEval]);
   }, [result]);
 
-  const updateField = (key: keyof Omit<FormState, "intervals">, value: string) => {
-    setForm((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+  const updateField = (key: "age_band" | "sex" | "qtc_method", value: string) => {
+    setForm((prev) => {
+      if (key === "qtc_method") {
+        return { ...prev, qtc_method: value as QTcMethod };
+      }
+      if (key === "sex") {
+        return { ...prev, sex: value as ScoreRequest["sex"] };
+      }
+      return { ...prev, age_band: value };
+    });
   };
 
   const updateInterval = (key: IntervalKey, value: string) => {
@@ -87,16 +93,13 @@ const GuardRailForm: React.FC = () => {
 
   const buildPayload = (): ScoreRequest | null => {
     const missing: IntervalKey[] = [];
-    const intervals = {} as IntervalSet;
+    const intervals: ScoreRequest["intervals"] = {
+      qtc_method: (form.qtc_method ?? "bazett") as QTcMethod,
+    };
 
     for (const key of INTERVAL_KEYS) {
-      const raw = form.intervals[key]?.trim();
-      if (!raw) {
-        missing.push(key);
-        continue;
-      }
-      const numeric = Number(raw);
-      if (!Number.isFinite(numeric)) {
+      const numeric = numOrNull(form.intervals[key]);
+      if (numeric == null) {
         missing.push(key);
         continue;
       }
@@ -114,7 +117,6 @@ const GuardRailForm: React.FC = () => {
     return {
       age_band: form.age_band,
       sex: form.sex,
-      qtc_method: form.qtc_method,
       intervals,
     };
   };
@@ -124,7 +126,7 @@ const GuardRailForm: React.FC = () => {
     setError(null);
     setCopyState("idle");
     try {
-      const response = await scoreGuardrail(payload);
+      const response = await scoreGuardRail(payload);
       setResult(response);
     } catch (err) {
       if (err instanceof Error) {
@@ -167,6 +169,14 @@ const GuardRailForm: React.FC = () => {
       setCopyState("error");
     }
   };
+
+  const methodLabel = (() => {
+    const rawMethod = result?.method;
+    if (typeof rawMethod === "string" && rawMethod.length > 0) {
+      return rawMethod.charAt(0).toUpperCase() + rawMethod.slice(1);
+    }
+    return form.qtc_method === "fridericia" ? "Fridericia" : "Bazett";
+  })();
 
   return (
     <section aria-labelledby="guardrail-heading">
@@ -272,7 +282,7 @@ const GuardRailForm: React.FC = () => {
           <div className="section-header" style={{ alignItems: "flex-start" }}>
             <div>
               <h3 id="guardrail-results-title">Encounter results</h3>
-              <p className="small-text">QTc reported using the {result.method} method.</p>
+              <p className="small-text">QTc reported using the {methodLabel} method.</p>
             </div>
             <div className="section-actions">
               <button type="button" onClick={handleCopy}>
@@ -297,15 +307,17 @@ const GuardRailForm: React.FC = () => {
 
           <div className="summary-box" role="status" aria-live="polite">
             <strong>Encounter summary:</strong>
-            <p style={{ margin: "0.5rem 0 0" }}>{result.summary}</p>
-            <p style={{ margin: "0.5rem 0 0" }}>Calculated QTc: <strong>{result.QTc_ms} ms</strong>.</p>
+            <p style={{ margin: "0.5rem 0 0" }}>{result.summary ?? "No summary returned."}</p>
+            <p style={{ margin: "0.5rem 0 0" }}>
+              Calculated QTc: <strong>{result.QTc_ms ?? "—"} ms</strong>.
+            </p>
           </div>
 
-          {result.notes && result.notes.length > 0 && (
+          {Array.isArray(result.notes) && result.notes.length > 0 && (
             <div style={{ marginTop: "1rem" }}>
               <strong>Additional notes</strong>
               <ul>
-                {result.notes.map((note) => (
+                {result.notes.map((note: string) => (
                   <li key={note} className="small-text">
                     {note}
                   </li>
@@ -318,5 +330,11 @@ const GuardRailForm: React.FC = () => {
     </section>
   );
 };
+
+function numOrNull(v?: string) {
+  if (v == null || v.trim() === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
 
 export default GuardRailForm;

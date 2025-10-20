@@ -1,4 +1,14 @@
-import type { AgeBand, QTcMethod, Sex } from "../api/types";
+import type { QTcMethod, Sex } from "../api/types";
+
+export type AgeBand =
+  | "neonate"
+  | "infant"
+  | "child_1_5"
+  | "child_6_12"
+  | "adolescent"
+  | "adult_18_39"
+  | "adult_40_64"
+  | "adult_65_plus";
 
 export const AGE_BAND_OPTIONS: Array<{ value: AgeBand; label: string }> = [
   { value: "neonate", label: "Neonate" },
@@ -17,6 +27,6 @@ export const SEX_OPTIONS: Array<{ value: Sex; label: string }> = [
 ];
 
 export const QTC_METHOD_OPTIONS: Array<{ value: QTcMethod; label: string }> = [
-  { value: "Bazett", label: "Bazett" },
-  { value: "Fridericia", label: "Fridericia" },
+  { value: "bazett", label: "Bazett" },
+  { value: "fridericia", label: "Fridericia" },
 ];
