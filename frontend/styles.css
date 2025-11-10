@@ -1,65 +1,181 @@
-:root{
-  --bg:#0b1221;
-  --card:#ffffff;
-  --ink:#0f172a;
-  --muted:#64748b;
-  --line:#e5e7eb;
-  --primary:#1d4ed8;
-  --primary-ink:#fff;
-  --ok:#16a34a;
-  --warn:#f59e0b;
-  --bad:#dc2626;
-  --ok-bg:#dcfce7;
-  --warn-bg:#fef3c7;
-  --bad-bg:#fee2e2;
-  --soft:#f8fafc;
-  --radius:16px;
-  --shadow:0 4px 12px rgba(2,6,23,.06);
-  --mono:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-  --sans:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+/* ===== CSS VARIABLES FOR THEMING (From Appointease) ===== */
+:root {
+  /* Light Mode (default) */
+  --bg-primary: #f7f9fc;
+  --bg-secondary: #ffffff;
+  --text-primary: #1e3a8a;
+  --text-secondary: #475569;
+  --accent-primary: #3b82f6;
+  --accent-secondary: #2563eb;
+  --accent-tertiary: #4e46e5;
+  --border-color: #e0e7f2;
+  --panel-bg: #ffffff;
+  --panel-hover-bg: #f1f5f9;
+  --input-bg: #f1f5f9;
+  --input-border: #cbd5e1;
+  --header-toggle-bg: #e0e7f2;
+  --header-toggle-color: #1e3a8a;
+  --header-toggle-hover: #cbd5e1;
+  --button-secondary-bg: #f1f5f9;
+  --button-secondary-color: #475569;
+  --button-secondary-hover: #e2e8f0;
+  --focus-outline: #3b82f6;
+  --sidebar-bg: #ffffff;
+  --sidebar-text: #475569;
+  --sidebar-active: #1e3a8a;
+  --error-color: #ef4444;
+  --success-color: #22c55e;
+  --warning-color: #f59e0b;
+  --info-color: #0ea5e9;
+  --status-online: #22c55e;
+  --status-offline: #ef4444;
+  /* ... (and all the other Appointease variables) ... */
+  --flow-dna: #ef4444;
+}
+/* Dark Mode */
+.dark-mode {
+  --bg-primary: #1e293b;
+  /* ... (all the Appointease dark mode variables) ... */
+  --appointment-standard-bg: rgba(255, 255, 255, 0.05);
+}
+/* High Contrast Mode */
+.high-contrast-mode {
+  --bg-primary: #000000;
+  /* ... (all the Appointease high-contrast variables) ... */
+  --status-rejected: #ff6666;
 }
 
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{font:15px/1.5 var(--sans);color:var(--ink);background:#f1f5f9}
-
-.topbar{
-  background:#0d1b2a;color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between
+/* From Appointease styles.css */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
-.topbar h1{margin:0;font-size:22px}
-.subtitle{margin:2px 0 0;color:#bcd}
+html {
+  font-size: 62.5%; /* This makes 1rem = 10px, which Appointease uses */
+}
+body {
+  font-family: 'Open Sans', system-ui, -apple-system, sans-serif;
+  font-size: 1.4rem; /* This is 14px */
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+  overflow-x: hidden;
+  min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
+}
+.dark-mode {
+  background: linear-gradient(to top right, #2196F3, #000000);
+}
+.high-contrast-mode {
+  background: #000000;
+}
+
+/* Translated to use Appointease variables */
+.topbar {
+  background: var(--bg-secondary); /* Changed */
+  color: var(--text-primary); /* Changed */
+  padding: 1.6rem 2rem; /* Standardized spacing */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color); /* Added */
+  height: 6rem; /* Match Appointease header */
+}
+.topbar h1 {
+  margin: 0;
+  font-size: 2.2rem;
+  color: var(--text-primary); /* Changed */
+}
+.subtitle {
+  margin: 2px 0 0;
+  color: var(--text-secondary); /* Changed */
+}
 .api-box{display:flex;align-items:center;gap:10px}
 .api-base{display:flex;align-items:center;gap:8px}
-.api-base code{background:rgba(255,255,255,.1);padding:4px 8px;border-radius:999px}
-.api-base input{border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;padding:6px 8px;border-radius:8px;min-width:220px;outline:none}
 
-.container{max-width:1080px;margin:24px auto;padding:0 16px;display:grid;gap:20px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+/* Translated to use Appointease variables */
+.api-base code {
+  background: var(--input-bg); /* Changed */
+  color: var(--text-primary); /* Changed */
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px; /* Match Appointease */
+}
+.api-base input {
+  border: 1px solid var(--input-border); /* Changed */
+  background: var(--input-bg); /* Changed */
+  color: var(--text-primary); /* Changed */
+  padding: 0.6rem 0.8rem;
+  border-radius: 4px; /* Match Appointease */
+  min-width: 220px;
+  outline: none;
+}
+.api-base input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
 .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 
 .grid{display:grid;gap:12px}
 .grid--two{grid-template-columns:repeat(2,minmax(0,1fr))}
 .grid-row-end{grid-column:1/-1}
 
-.field{display:flex;flex-direction:column;gap:6px}
-.field input,.field select{padding:10px 12px;border:1px solid var(--line);border-radius:12px;outline:none}
-.field input:focus,.field select:focus{border-color:#cbd5e1;box-shadow:0 0 0 3px rgba(99,102,241,.15)}
-.field .hint{font-size:12px;color:var(--muted);margin-left:6px}
-
-.field--row{display:flex;gap:18px;align-items:center}
-.field--row label{display:flex;gap:6px;align-items:center}
-
-.btn{border:0;border-radius:999px;padding:10px 14px;cursor:pointer;font-weight:600}
-.btn--primary{background:var(--primary);color:var(--primary-ink);box-shadow:0 6px 14px rgba(29,78,216,.18)}
-.btn--ghost{background:#eef2ff;color:#1e3a8a}
-.btn--pill{background:#16314c;color:#cfe; }
-.btn:disabled{opacity:.6;cursor:not-allowed}
-
-.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:#e5e7eb;color:#111827}
-.chip--green{background:var(--ok-bg);color:#166534}
-.chip--amber{background:var(--warn-bg);color:#92400e}
-.chip--red{background:var(--bad-bg);color:#991b1b}
-.chip--muted{background:#e5e7eb;color:#334155}
+/* ===== SHARED BUTTONS (From Appointease) ===== */
+.btn {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1.4rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+.btn-primary {
+  background: var(--accent-primary);
+  color: white;
+}
+.btn-primary:hover {
+  background: var(--accent-secondary);
+  transform: translateY(-1px);
+}
+.btn-secondary {
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-color);
+  border: 1px solid var(--input-border);
+}
+.btn-secondary:hover {
+  background: var(--button-secondary-hover);
+}
+.btn-small {
+  padding: 0.6rem 1.2rem;
+  font-size: 1.2rem;
+  width: auto;
+  margin-left: 0.5rem;
+}
+.btn-success {
+  background: var(--success-color);
+  color: white;
+}
+.btn-success:hover {
+  background: #16a34a;
+}
+.btn-error {
+  background: var(--error-color);
+  color: white;
+}
+.btn-error:hover {
+  background: #dc2626;
+}
+.btn:focus {
+  outline: 3px solid var(--focus-outline);
+  outline-offset: 2px;
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
 
 .result{margin-top:12px}
 .result-card{border:1px solid var(--line);border-radius:var(--radius);padding:16px;background:#fff}
@@ -85,7 +201,7 @@ body{font:15px/1.5 var(--sans);color:var(--ink);background:#f1f5f9}
 .canvas-wrap{position:relative}
 #trend-canvas{width:100%;height:300px;display:block}
 .chart-legend{display:flex;gap:12px;align-items:center;margin-top:6px;color:var(--muted);font-size:12px}
-.legend-swatch{width:14px;height:3px;border-radius:2px;display:inline-block}
+.legend-swatch{width:14px;height:3rpx;border-radius:2px;display:inline-block}
 .sw-blue{background:#2563eb}
 .sw-dash{background:repeating-linear-gradient(to right,#94a3b8 0 8px, transparent 8px 14px)}
 
@@ -102,24 +218,7 @@ label .helper {
   font-style: italic;
   margin-left: .4rem;
 }
-/* Buttons */
-.btn-secondary {
-  padding: .5rem .8rem;
-  border-radius: .6rem;
-  background: #eef2ff;
-  border: 1px solid #c7d2fe;
-  color: #1e3a8a;
-}
-button.success {
-  background: #10b981 !important; /* teal */
-  border-color: #0ea5e9;
-  color: #fff !important;
-}
-/* Chips */
-.chip-muted { background: #f3f4f6; color:#111827; }
-.chip-green { background: #dcfce7; color:#166534; }
-.chip-amber { background: #fef3c7; color:#92400e; }
-.chip-red   { background: #fee2e2; color:#991b1b; }
+
 /* Narrative text */
 .narrative { color:#111827; margin:.5rem 0 0; }
 /* Recommendations block */
@@ -148,3 +247,115 @@ button.success {
 .chart-title { font-weight: 600; margin: .25rem 0 .5rem; }
 .legend { display:flex; gap:1rem; justify-content:flex-end; font-size:.85rem; color:#374151; }
 .legend .swatch { display:inline-block; width:.75rem; height:.5rem; border:1px solid #cbd5e1; margin-right:.3rem; vertical-align:middle; }
+
+/* ===== ADDED FROM APPOINTEASE (To replace .field, .card, etc) ===== */
+
+/* SHARED LAYOUTS (for .action-card) */
+.action-card {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 2rem;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.action-header {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.list-header {
+  padding: 1.5rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  background: var(--panel-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* SHARED FORM ELEMENTS (for .form-group, .form-input) */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1.3rem;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  font-size: 1.4rem;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+}
+
+.form-textarea {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  background: var(--panel-bg);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* SHARED STATUS BADGES (for .status-badge) */
+.status-badge {
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-block;
+}
+
+/* Add specific colors from Appointease */
+.status-queued {
+  background: var(--appointment-priority-bg);
+  color: var(--status-pending);
+}
+.status-booked {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--status-booked);
+}
+.status-cancelled {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--status-rejected);
+}
+.status-error-badge {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error-color);
+}
+.status-warning-badge {
+  background: var(--appointment-priority-bg);
+  color: var(--warning-color);
+}
+.status-success-badge {
+   background: rgba(34, 197, 94, 0.1);
+  color: var(--success-color);
+}

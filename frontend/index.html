@@ -4,17 +4,21 @@
   <meta charset="utf-8" />
   <title>Cordea — Patient Review & Patient Trends</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- This links to the new stylesheet you just saved -->
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
+  <!-- The .topbar styles were updated in styles.css to use new variables -->
   <header class="topbar">
     <div class="brand">
       <h1>Cordea</h1>
       <p class="subtitle">Clinician demo tools for Patient Review and Patient Trends</p>
     </div>
     <div class="api-box">
-      <span id="health-chip" class="chip chip--muted"></span>
-      <button id="health-retry" class="btn btn--pill">Retry</button>
+      <!-- Replaced .chip .chip--muted with .status-badge -->
+      <span id="health-chip" class="status-badge"></span>
+      <!-- Replaced .btn .btn--pill with .btn .btn-secondary .btn-small -->
+      <button id="health-retry" class="btn btn-secondary btn-small">Retry</button>
       <div class="api-base">
         <label>API base</label>
         <code id="api-base-pill"></code>
@@ -23,66 +27,90 @@
     </div>
   </header>
 
-  <main class="container">
+  <!-- Replaced .container with .main and added inline styles to preserve your layout -->
+  <main class="main" style="max-width: 1080px; margin: 2.4rem auto; display: grid; gap: 2rem;">
+    
     <!-- Patient Review -->
-    <section class="card">
-      <div class="section-head">
+    <!-- Replaced .card with .action-card -->
+    <section class="action-card">
+      <!-- Replaced .section-head with .action-header -->
+      <div class="action-header">
         <h2>Patient Review — Encounter Summary</h2>
         <div class="section-actions">
-          <button id="guardrail-demo-adult" class="btn btn--ghost">Load Adult Demo</button>
-          <button id="guardrail-demo-paeds" class="btn btn--ghost">Load Paediatric Demo</button>
+          <!-- Replaced .btn .btn--ghost with .btn .btn-secondary .btn-small -->
+          <button id="guardrail-demo-adult" class="btn btn-secondary btn-small">Load Adult Demo</button>
+          <button id="guardrail-demo-paeds" class="btn btn-secondary btn-small">Load Paediatric Demo</button>
         </div>
       </div>
 
       <form id="guardrail-form" class="grid grid--two">
-        <label class="field">
-          <span>Age band</span>
-          <select name="age_band">
+        
+        <!-- Replaced .field with .form-group, .form-label, and .form-select -->
+        <div class="form-group">
+          <label class="form-label" for="age_band_select">Age band</label>
+          <select name="age_band" id="age_band_select" class="form-select">
             <option>Adult 65+</option>
             <option>Adult 18–64</option>
             <option>Child 10–12 yrs</option>
           </select>
-        </label>
-        <label class="field">
-          <span>Sex</span>
-          <select name="sex">
+        </div>
+
+        <!-- Replaced .field with .form-group, .form-label, and .form-select -->
+        <div class="form-group">
+          <label class="form-label" for="sex_select">Sex</label>
+          <select name="sex" id="sex_select" class="form-select">
             <option value="male">Male</option>
             <option value="female">Female</option>
           </select>
-        </label>
-        <label class="field">
-          <span>Heart rate (bpm) <em class="hint">55–100</em></span>
-          <input name="heart_rate" type="number" inputmode="numeric" />
-        </label>
-        <label class="field">
-          <span>PR interval (ms) <em class="hint">120–210</em></span>
-          <input name="PR_ms" type="number" inputmode="numeric" />
-        </label>
-        <label class="field">
-          <span>QRS duration (ms) <em class="hint">60–115</em></span>
-          <input name="QRS_ms" type="number" inputmode="numeric" />
-        </label>
-        <label class="field">
-          <span>QT interval (ms) <em class="hint">350–450</em></span>
-          <input name="QT_ms" type="number" inputmode="numeric" />
-        </label>
-        <label class="field">
-          <span>RR interval (ms) <em class="hint">600–1200</em></span>
-          <input name="RR_ms" type="number" inputmode="numeric" />
-        </label>
+        </div>
 
-        <fieldset class="field field--row">
-          <legend>QTc method</legend>
-          <label><input type="radio" name="qtc_method" value="bazett" checked /> Bazett</label>
-          <label><input type="radio" name="qtc_method" value="fridericia" /> Fridericia</label>
+        <!-- Replaced .field with .form-group, .form-label, and .form-input -->
+        <div class="form-group">
+          <label class="form-label" for="heart_rate_input">Heart rate (bpm) <em class="helper">55–100</em></label>
+          <input name="heart_rate" id="heart_rate_input" class="form-input" type="number" inputmode="numeric" />
+        </div>
+
+        <!-- Replaced .field with .form-group, .form-label, and .form-input -->
+        <div class="form-group">
+          <label class="form-label" for="pr_ms_input">PR interval (ms) <em class="helper">120–210</em></label>
+          <input name="PR_ms" id="pr_ms_input" class="form-input" type="number" inputmode="numeric" />
+        </div>
+
+        <!-- Replaced .field with .form-group, .form-label, and .form-input -->
+        <div class="form-group">
+          <label class="form-label" for="qrs_ms_input">QRS duration (ms) <em class="helper">60–115</em></label>
+          <input name="QRS_ms" id="qrs_ms_input" class="form-input" type="number" inputmode="numeric" />
+        </div>
+
+        <!-- Replaced .field with .form-group, .form-label, and .form-input -->
+        <div class="form-group">
+          <label class="form-label" for="qt_ms_input">QT interval (ms) <em class="helper">350–450</em></label>
+          <input name="QT_ms" id="qt_ms_input" class="form-input" type="number" inputmode="numeric" />
+        </div>
+
+        <!-- Replaced .field with .form-group, .form-label, and .form-input -->
+        <div class="form-group">
+          <label class="form-label" for="rr_ms_input">RR interval (ms) <em class="helper">600–1200</em></label>
+          <input name="RR_ms" id="rr_ms_input" class="form-input" type="number" inputmode="numeric" />
+        </div>
+
+        <!-- Replaced .field .field--row with .form-group and inline styles for layout -->
+        <fieldset class="form-group">
+          <label class="form-label">QTc method</label>
+          <div style="display: flex; gap: 1.8rem; align-items: center; margin-top: 0.5rem;">
+            <label style="display: flex; gap: 0.6rem; align-items: center; font-weight: normal; color: var(--text-secondary);"><input type="radio" name="qtc_method" value="bazett" checked /> Bazett</label>
+            <label style="display: flex; gap: 0.6rem; align-items: center; font-weight: normal; color: var(--text-secondary);"><input type="radio" name="qtc_method" value="fridericia" /> Fridericia</label>
+          </div>
         </fieldset>
 
         <div class="grid-row-end">
-          <button id="guardrail-submit" class="btn btn--primary" type="submit">Evaluate encounter</button>
+          <!-- Replaced .btn .btn--primary with .btn .btn-primary -->
+          <button id="guardrail-submit" class="btn btn-primary" type="submit">Evaluate encounter</button>
         </div>
       </form>
 
-      <p id="guardrail-error" class="error hide"></p>
+      <!-- Replaced .error with .status-badge .status-error-badge for new styling -->
+      <p id="guardrail-error" class="status-badge status-error-badge hide" style="width: 100%; margin-top: 1rem;"></p>
 
       <!-- Patient Review Result -->
       <div id="guardrail-result" class="result"></div>
@@ -91,64 +119,77 @@
     </section>
 
     <!-- Patient Trends -->
-    <section class="card">
-      <h2>Patient Trends — QTc Monitoring</h2>
+    <!-- Replaced .card with .action-card -->
+    <section class="action-card">
+      <h2 class="action-header" style="border: none; padding: 0; margin-bottom: 1.5rem;">Patient Trends — QTc Monitoring</h2>
 
       <form id="trend-form" class="grid grid--two">
-        <label class="field">
-          <span>Age band</span>
-          <select id="trend-age-band">
+        
+        <!-- Replaced .field with .form-group, .form-label, and .form-select -->
+        <div class="form-group">
+          <label class="form-label" for="trend_age_band_select">Age band</label>
+          <select id="trend-age-band" class="form-select">
             <option>Adult 65+</option>
             <option>Adult 18–64</option>
             <option>Child 10–12 yrs</option>
           </select>
-        </label>
-        <label class="field">
-          <span>Sex</span>
-          <select id="trend-sex">
+        </div>
+
+        <!-- Replaced .field with .form-group, .form-label, and .form-select -->
+        <div class="form-group">
+          <label class="form-label" for="trend_sex_select">Sex</label>
+          <select id="trend-sex" class="form-select">
             <option value="male">Male</option>
             <option value="female">Female</option>
           </select>
-        </label>
+        </div>
 
-        <div class="history">
-          <h4>Historical QT and RR readings</h4>
+        <div class="history" style="grid-column: 1 / -1;">
+          <h4 class="form-label">Historical QT and RR readings</h4>
           <table class="table">
             <thead><tr><th>Date</th><th>QT (ms)</th><th>RR (ms)</th></tr></thead>
             <tbody id="trend-table-body"></tbody>
           </table>
         </div>
 
-        <label class="field">
-          <span>Reading date</span>
-          <input id="trend-date" type="text" placeholder="DD/MM/YYYY or YYYY-MM-DD" />
-        </label>
-        <label class="field">
-          <span>New QT (ms)</span>
-          <input id="trend-qt" type="number" inputmode="numeric" />
-        </label>
-        <label class="field">
-          <span>RR (ms)</span>
-          <input id="trend-rr" type="number" inputmode="numeric" />
-        </label>
+        <!-- Replaced .field with .form-group, .form-label, and .form-input -->
+        <div class="form-group">
+          <label class="form-label" for="trend_date_input">Reading date</label>
+          <input id="trend-date" class="form-input" type="text" placeholder="DD/MM/YYYY or YYYY-MM-DD" />
+        </div>
+        
+        <!-- Replaced .field with .form-group, .form-label, and .form-input -->
+        <div class="form-group">
+          <label class="form-label" for="trend_qt_input">New QT (ms)</label>
+          <input id="trend-qt" class="form-input" type="number" inputmode="numeric" />
+        </div>
+        
+        <!-- Replaced .field with .form-group, .form-label, and .form-input -->
+        <div class="form-group">
+          <label class="form-label" for="trend_rr_input">RR (ms)</label>
+          <input id="trend-rr" class="form-input" type="number" inputmode="numeric" />
+        </div>
 
         <div class="grid-row-end">
-          <button id="trend-submit" class="btn btn--primary" type="submit">Evaluate new reading</button>
+          <!-- Replaced .btn .btn--primary with .btn .btn-primary -->
+          <button id="trend-submit" class="btn btn-primary" type="submit">Evaluate new reading</button>
         </div>
       </form>
 
-      <p id="trend-error" class="error hide"></p>
+      <!-- Replaced .error with .status-badge .status-error-badge for new styling -->
+      <p id="trend-error" class="status-badge status-error-badge hide" style="width: 100%; margin-top: 1rem;"></p>
 
       <!-- Trend Result -->
-      <!-- Band chip & narrative -->
-      <div class="trend-meta">
-        <span id="trend-band-chip" class="chip chip-muted">—</span>
-        <p id="trend-narrative" class="narrative">—</p>
+      <div class="trend-meta" style="margin-top: 1.5rem;">
+        <!-- Replaced .chip .chip-muted with .status-badge -->
+        <span id="trend-band-chip" class="status-badge">—</span>
+        <p id="trend-narrative" class="narrative" style="margin-top: 1rem;"></p>
       </div>
       <!-- Export actions -->
-      <div class="actions">
-        <button id="export-csv" class="btn-secondary" type="button">Export CSV</button>
-        <button id="print-report" class="btn-secondary" type="button">Print report</button>
+      <div class="actions" style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+        <!-- Added .btn and .btn-small to use new styles -->
+        <button id="export-csv" class="btn btn-secondary btn-small" type="button">Export CSV</button>
+        <button id="print-report" class="btn btn-secondary btn-small" type="button">Print report</button>
       </div>
       <div id="trend-result" class="result">
           <!-- Chart canvas already present; add overlay tooltip container -->
@@ -157,7 +198,8 @@
     </section>
   </main>
 
-  <footer id="backend-warning" class="footer-warn">
+  <!-- Replaced .footer-warn with Appointease badge styles -->
+  <footer id="backend-warning" class="status-badge status-error-badge" style="display: block; text-align: center; max-width: 1080px; margin: 2rem auto; padding: 1rem;">
     FastAPI backend required at the configured base URL.
   </footer>
 
