@@ -1,0 +1,9 @@
+# Python
+__pycache__/
+*.pyc
+
+# Logs & Output
+audit.jsonl
+
+# Mac
+.DS_Store
