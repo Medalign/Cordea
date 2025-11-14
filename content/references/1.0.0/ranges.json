@@ -1,11 +1,79 @@
 {
-  "adult_65_plus:male:HR_bpm": {"low": 55, "high": 100},
-  "adult_65_plus:male:PR_ms": {"low": 120, "high": 210},
-  "adult_65_plus:male:QRS_ms": {"low": 60, "high": 115},
-  "adult_65_plus:male:QTc_ms": {"low": 360, "high": 460, "percentiles": {"50": 420, "90": 450, "99": 470}},
+  "adult_18_39:male:HR_bpm":  { "low": 60, "high": 100 },
+  "adult_18_39:female:HR_bpm":{ "low": 60, "high": 100 },
 
-  "neonate_0_28d:male:HR_bpm": {"low": 90, "high": 160},
-  "neonate_0_28d:male:PR_ms": {"low": 80, "high": 160},
-  "neonate_0_28d:male:QRS_ms": {"low": 40, "high": 80},
-  "neonate_0_28d:male:QTc_ms": {"low": 340, "high": 450, "percentiles": {"50": 410, "90": 440, "99": 470}}
+  "adult_18_39:male:PR_ms":   { "low": 120, "high": 200 },
+  "adult_18_39:female:PR_ms": { "low": 120, "high": 200 },
+
+  "adult_18_39:male:QRS_ms":  { "low": 60, "high": 110 },
+  "adult_18_39:female:QRS_ms":{ "low": 60, "high": 110 },
+
+  "adult_18_39:male:QTc_ms": {
+    "low": 360,
+    "high": 450,
+    "percentiles": { "50": 420, "90": 450, "99": 470 }
+  },
+  "adult_18_39:female:QTc_ms": {
+    "low": 370,
+    "high": 470,
+    "percentiles": { "50": 430, "90": 460, "99": 480 }
+  },
+
+  "adult_65_plus:male:HR_bpm":   { "low": 55, "high": 100 },
+  "adult_65_plus:female:HR_bpm": { "low": 55, "high": 100 },
+
+  "adult_65_plus:male:PR_ms":    { "low": 120, "high": 210 },
+  "adult_65_plus:female:PR_ms":  { "low": 120, "high": 210 },
+
+  "adult_65_plus:male:QRS_ms":   { "low": 60, "high": 115 },
+  "adult_65_plus:female:QRS_ms": { "low": 60, "high": 115 },
+
+  "adult_65_plus:male:QTc_ms": {
+    "low": 360,
+    "high": 460,
+    "percentiles": { "50": 430, "90": 455, "99": 475 }
+  },
+  "adult_65_plus:female:QTc_ms": {
+    "low": 370,
+    "high": 480,
+    "percentiles": { "50": 440, "90": 465, "99": 485 }
+  },
+
+  "child_6_12:male:HR_bpm":    { "low": 70, "high": 110 },
+  "child_6_12:female:HR_bpm":  { "low": 70, "high": 110 },
+
+  "child_6_12:male:PR_ms":     { "low": 90, "high": 160 },
+  "child_6_12:female:PR_ms":   { "low": 90, "high": 160 },
+
+  "child_6_12:male:QRS_ms":    { "low": 60, "high": 100 },
+  "child_6_12:female:QRS_ms":  { "low": 60, "high": 100 },
+
+  "child_6_12:male:QTc_ms": {
+    "low": 360,
+    "high": 470,
+    "percentiles": { "50": 420, "90": 460, "99": 480 }
+  },
+  "child_6_12:female:QTc_ms": {
+    "low": 360,
+    "high": 470,
+    "percentiles": { "50": 420, "90": 465, "99": 485 }
+  },
+
+  "neonate_0_28d:male:HR_bpm": {
+    "low": 90,
+    "high": 160
+  },
+  "neonate_0_28d:male:PR_ms": {
+    "low": 80,
+    "high": 160
+  },
+  "neonate_0_28d:male:QRS_ms": {
+    "low": 40,
+    "high": 80
+  },
+  "neonate_0_28d:male:QTc_ms": {
+    "low": 340,
+    "high": 450,
+    "percentiles": { "50": 410, "90": 440, "99": 470 }
+  }
 }
