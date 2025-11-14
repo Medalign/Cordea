@@ -34,11 +34,11 @@
     "
   >
 
-    <!-- Sidebar navigation -->
     <aside class="sidebar" aria-label="Cordea navigation">
       <nav class="nav">
         <h2 class="nav-title">Views</h2>
         <ul class="nav-list" style="list-style: none; padding: 0; margin: 1rem 0 0; display: flex; flex-direction: column; gap: 0.5rem;">
+
           <li>
             <button
               id="tab-review"
@@ -52,6 +52,7 @@
               Patient Review
             </button>
           </li>
+
           <li>
             <button
               id="tab-trends"
@@ -65,14 +66,27 @@
               Patient Trends
             </button>
           </li>
+
+          <li>
+            <button
+              id="tab-ai"
+              class="btn btn-secondary btn-small tab-trigger"
+              role="tab"
+              aria-selected="false"
+              aria-controls="panel-ai"
+              type="button"
+              style="width: 100%; justify-content: flex-start;"
+            >
+              AI ECG Summary
+            </button>
+          </li>
+
         </ul>
       </nav>
     </aside>
 
-    <!-- Content panels -->
     <div class="content-panels" style="display: flex; flex-direction: column; gap: 2rem;">
 
-      <!-- Patient Review panel -->
       <section
         id="panel-review"
         class="action-card tab-panel"
@@ -174,15 +188,12 @@
           <fieldset class="form-group">
             <label class="form-label">QTc method</label>
             <div style="display: flex; gap: 1.8rem; align-items: center; margin-top: 0.5rem;">
-              <label
-                style="display: flex; gap: 0.6rem; align-items: center; font-weight: normal; color: var(--text-secondary);"
-              >
+              <label style="display: flex; gap: 0.6rem; align-items: center; font-weight: normal; color: var(--text-secondary);">
                 <input type="radio" name="qtc_method" value="bazett" checked />
                 Bazett
               </label>
-              <label
-                style="display: flex; gap: 0.6rem; align-items: center; font-weight: normal; color: var(--text-secondary);"
-              >
+
+              <label style="display: flex; gap: 0.6rem; align-items: center; font-weight: normal; color: var(--text-secondary);">
                 <input type="radio" name="qtc_method" value="fridericia" />
                 Fridericia
               </label>
@@ -196,17 +207,12 @@
           </div>
         </form>
 
-        <p
-          id="guardrail-error"
-          class="status-badge status-error-badge hide"
-          style="width: 100%; margin-top: 1rem;"
-        ></p>
+        <p id="guardrail-error" class="status-badge status-error-badge hide" style="width: 100%; margin-top: 1rem;"></p>
 
         <div id="guardrail-result" class="result"></div>
         <div id="guardrail-recs" class="recs"></div>
       </section>
 
-      <!-- Patient Trends panel -->
       <section
         id="panel-trends"
         class="action-card tab-panel"
@@ -253,12 +259,7 @@
 
           <div class="form-group">
             <label class="form-label" for="trend-date">Reading date</label>
-            <input
-              id="trend-date"
-              class="form-input"
-              type="text"
-              placeholder="DD/MM/YYYY or YYYY-MM-DD"
-            />
+            <input id="trend-date" class="form-input" type="text" placeholder="DD/MM/YYYY or YYYY-MM-DD" />
           </div>
 
           <div class="form-group">
@@ -278,11 +279,7 @@
           </div>
         </form>
 
-        <p
-          id="trend-error"
-          class="status-badge status-error-badge hide"
-          style="width: 100%; margin-top: 1rem;"
-        ></p>
+        <p id="trend-error" class="status-badge status-error-badge hide" style="width: 100%; margin-top: 1rem;"></p>
 
         <div class="trend-meta" style="margin-top: 1.5rem;">
           <span id="trend-band-chip" class="status-badge">—</span>
@@ -290,17 +287,69 @@
         </div>
 
         <div class="actions" style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-          <button id="export-csv" class="btn btn-secondary btn-small" type="button">
-            Export CSV
-          </button>
-          <button id="print-report" class="btn btn-secondary btn-small" type="button">
-            Print report
-          </button>
+          <button id="export-csv" class="btn btn-secondary btn-small" type="button">Export CSV</button>
+          <button id="print-report" class="btn btn-secondary btn-small" type="button">Print report</button>
         </div>
 
         <div id="trend-result" class="result">
           <div id="chart-tooltip" class="chart-tooltip" style="display: none;"></div>
         </div>
+      </section>
+
+      <section
+        id="panel-ai"
+        class="action-card tab-panel"
+        role="tabpanel"
+        aria-labelledby="tab-ai"
+        hidden
+      >
+        <h2 class="action-header" style="border: none; padding: 0; margin-bottom: 1.5rem;">
+          AI ECG Summary — QTc Context
+        </h2>
+
+        <p class="narrative" style="margin-bottom: 1.5rem;">
+          This view turns the calculated intervals and QTc into a short, non-diagnostic narrative
+          for documentation and teaching. It does <strong>not</strong> provide diagnosis or treatment
+          recommendations.
+        </p>
+
+        <form id="ai-summary-form" class="grid grid--two">
+          <div class="form-group">
+            <label class="form-label" for="ai-age-band">Age band (for narrative)</label>
+            <select id="ai-age-band" class="form-select">
+              <option>6–12 years</option>
+              <option>13–17 years</option>
+              <option>18–39 years</option>
+              <option>40–64 years</option>
+              <option>65+ years</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="ai-sex">Sex</label>
+            <select id="ai-sex" class="form-select">
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <p class="helper">
+              When possible, Cordea will reuse the most recent Patient Review and Trends results.
+              You can still adjust the age band and sex here for how the narrative is phrased.
+            </p>
+          </div>
+
+          <div class="grid-row-end">
+            <button id="ai-generate" class="btn btn-primary" type="submit">
+              Generate AI summary
+            </button>
+          </div>
+        </form>
+
+        <p id="ai-error" class="status-badge status-error-badge hide" style="width: 100%; margin-top: 1rem;"></p>
+
+        <div id="ai-summary-result" class="result" style="margin-top: 1.5rem;"></div>
       </section>
 
     </div>
@@ -314,16 +363,17 @@
     FastAPI backend required at the configured base URL.
   </footer>
 
-  <!-- Sidebar tab logic -->
   <script>
     (function () {
       const tabs = {
         review: document.getElementById("tab-review"),
         trends: document.getElementById("tab-trends"),
+        ai: document.getElementById("tab-ai"),
       };
       const panels = {
         review: document.getElementById("panel-review"),
         trends: document.getElementById("panel-trends"),
+        ai: document.getElementById("panel-ai"),
       };
 
       function activateTab(name) {
@@ -346,6 +396,11 @@
       }
       if (tabs.trends) {
         tabs.trends.addEventListener("click", () => activateTab("trends"));
+      }
+
+      // 4.3 Add AI tab switching
+      if (tabs.ai) {
+        tabs.ai.addEventListener("click", () => activateTab("ai"));
       }
 
       // Default view

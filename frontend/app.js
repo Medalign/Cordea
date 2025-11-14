@@ -1,5 +1,4 @@
 // ==== Robust API client + UI for Cordea (vanilla JS) ====
-
 class ApiError extends Error {
   constructor(message, { status, statusText, detail } = {}) {
     super(message);
@@ -9,28 +8,25 @@ class ApiError extends Error {
     this.detail = detail;
   }
 }
-
 const DEFAULT_API_BASE = "http://127.0.0.1:8000";
 const STORAGE_KEY = "cordeaApiBase";
-
 document.title = "Cordea — Patient Review & Patient Trends";
-
 // ----- DOM lookups -----
 const healthChip = document.getElementById("health-chip");
 const healthRetryBtn = document.getElementById("health-retry");
 const apiBaseInput = document.getElementById("api-base-input");
 const apiBasePill = document.getElementById("api-base-pill");
 const backendBanner = document.getElementById("backend-warning");
-
 // Patient Review DOM
 const guardrailForm = document.getElementById("guardrail-form");
 const guardrailSubmit = document.getElementById("guardrail-submit");
 const guardrailAdultDemo = document.getElementById("guardrail-demo-adult");
 const guardrailPaedsDemo = document.getElementById("guardrail-demo-paeds");
 const guardrailError = document.getElementById("guardrail-error");
+// Note: New render function uses more specific IDs, kept old one for now
 const guardrailResult = document.getElementById("guardrail-result");
+// Note: New render function uses 'guardrail-recs' (ul) not 'guardrailRecs' (div)
 const guardrailRecs = document.getElementById("guardrail-recs");
-
 // Patient Trends DOM
 const trendForm = document.getElementById("trend-form");
 const trendSubmit = document.getElementById("trend-submit");
@@ -45,24 +41,31 @@ const trendRrInput = document.getElementById("trend-rr");
 const chartTooltip = document.getElementById("chart-tooltip");
 const trendBandChip = document.getElementById("trend-band-chip");
 const trendNarrative = document.getElementById("trend-narrative");
-
+// AI Summary DOM
+const aiForm = document.getElementById("ai-summary-form");
+const aiAgeSelect = document.getElementById("ai-age-band");
+const aiSexSelect = document.getElementById("ai-sex");
+const aiGenerateBtn = document.getElementById("ai-generate");
+const aiError = document.getElementById("ai-error");
+const aiResult = document.getElementById("ai-summary-result");
 // Keep a reference to plotted points for tooltip hit-tests
 let _plottedPoints = []; // {x,y,dateISO, qtc, qt, rr}
-
 // This will mirror the readings we send to the backend
 const historicalReadings = [
   { timestamp: "2025-09-01", QT_ms: 430, RR_ms: 1000 },
   { timestamp: "2025-09-10", QT_ms: 440, RR_ms: 1000 },
   { timestamp: "2025-09-20", QT_ms: 438, RR_ms: 1000 }
 ];
-
 // Latest series with QTc + QT/RR for CSV export
 window._latestSeries = [];
-
+// Keep last successful outputs from Tabs 1 and 2 so AI tab can reuse them
+let _lastGuardrailPayload = null; // what we sent to /guardrail/score
+let _lastGuardrailResult = null; // what backend returned
+let _lastTrendPayload = null; // what we sent to /trend/series
+let _lastTrendResult = null; // what backend returned
 let apiBase = loadApiBase();
 setApiBaseDisplay(apiBase);
 updateTrendTable();
-
 // Init default trend date
 if (trendDateInput) {
   try {
@@ -75,7 +78,6 @@ if (trendDateInput) {
     // ignore
   }
 }
-
 // ===== Helpers =====
 function normaliseBase(v) {
   if (!v) return DEFAULT_API_BASE;
@@ -109,39 +111,30 @@ function toIsoDate(value) {
   if (m) return `${m[3]}-${m[2]}-${m[1]}`;
   return s;
 }
-
 // Map UI labels to backend enum age bands (norms/percentiles keys)
 function mapAgeBandToEnum(label) {
   const L = (label || "")
     .toLowerCase()
     .replace(/\u2013|\u2014/g, "-")
     .trim();
-
   const table = {
-    // Current UI labels
-    "18-39 years": "adult_18_39",
-    "18–39 years": "adult_18_39",
-    "40-64 years": "adult_40_64",
-    "40–64 years": "adult_40_64",
-    "65+ years": "adult_65_plus",
-    "6-12 years": "child_6_12",
-    "6–12 years": "child_6_12",
-
-    // Legacy / fallback labels (old UI copies)
-    "adult 18-39": "adult_18_39",
-    "adult 18–39": "adult_18_39",
-    "adult 40-64": "adult_40_64",
-    "adult 40–64": "adult_40_64",
     "adult 65+": "adult_65_plus",
-    "child 6-12 yrs": "child_6_12",
-    "child 6–12 yrs": "child_6_12",
-    "child 10-12 yrs": "child_6_12",
-    "child 10–12 yrs": "child_6_12"
+    "65+ years": "adult_65_plus",
+    "adult 18–64": "adult_18_39",
+    "adult 18-64": "adult_18_39",
+    "18–39 years": "adult_18_39",
+    "18-39 years": "adult_18_39",
+    "40–64 years": "adult_40_64",
+    "40-64 years": "adult_40_64",
+    "6–12 years": "child_6_12",
+    "6-12 years": "child_6_12",
+    "13–17 years": "adolescent",
+    "13-17 years": "adolescent",
+    "child 10–12 yrs": "child_6_12",
+    "child 10-12 yrs": "child_6_12"
   };
-
   return table[L] || label;
 }
-
 function labelFromEnum(enumVal) {
   const t = (enumVal || "").toLowerCase();
   if (t === "adult_18_39") return "18–39 years";
@@ -150,7 +143,6 @@ function labelFromEnum(enumVal) {
   if (t === "child_6_12") return "6–12 years";
   return enumVal;
 }
-
 function defined(v) {
   return v !== undefined && v !== null && !Number.isNaN(v);
 }
@@ -158,27 +150,26 @@ function pick(...xs) {
   for (const x of xs) if (defined(x)) return x;
   return null;
 }
-
 // Fridericia correction (what the backend uses)
 function computeQTcFridericia(QT_ms, RR_ms) {
   if (!defined(QT_ms) || !defined(RR_ms) || RR_ms <= 0) return null;
   const rrSec = RR_ms / 1000;
   return Math.round((QT_ms / Math.cbrt(rrSec)) * 10) / 10;
 }
-
 // Percentile label -> severity bucket
 function severityFromPercentileLabel(label) {
   const t = String(label || "").toLowerCase();
   if (!t) return "muted";
+  // High-risk band: >=99th
   if (t.includes(">=99")) return "high";
-  if (t.includes("95")) return "high";
-  if (t.includes("99th")) return "high";
-  if (t.includes("90")) return "borderline";
+  // Near-upper band: ~95th+
+  if (t.includes("95")) return "borderline";
+  // <50th or ~50th+ are both "within reference"
   if (t.includes("<50")) return "normal";
-  if (t.includes("50")) return "borderline";
+  if (t.includes("50")) return "normal";
+  // Fallback
   return "muted";
 }
-
 // GREEN / AMBER / RED -> badge class
 function badgeClassFromStatus(status) {
   const s = String(status || "").toUpperCase();
@@ -187,7 +178,6 @@ function badgeClassFromStatus(status) {
   if (s === "RED") return "status-badge status-badge--red";
   return "status-badge status-badge--muted";
 }
-
 // severity bucket -> badge class
 function badgeClassFromSeverity(sev) {
   switch (sev) {
@@ -201,14 +191,12 @@ function badgeClassFromSeverity(sev) {
       return "status-badge status-badge--muted";
   }
 }
-
 function renderStatusBadge(statusText) {
   const span = document.createElement("span");
   span.className = badgeClassFromStatus(statusText);
   span.textContent = statusText || "—";
   return span;
 }
-
 function renderPercentileBadge(label) {
   const span = document.createElement("span");
   const sev = severityFromPercentileLabel(label);
@@ -216,7 +204,6 @@ function renderPercentileBadge(label) {
   span.textContent = label || "—";
   return span;
 }
-
 function deltaBadge(delta) {
   const span = document.createElement("span");
   const up = delta > 0;
@@ -227,7 +214,6 @@ function deltaBadge(delta) {
   }${delta.toFixed(1)} ms`;
   return span;
 }
-
 function formatShortDate(iso) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso || "—";
@@ -236,7 +222,6 @@ function formatShortDate(iso) {
     month: "short"
   });
 }
-
 function niceStep(x) {
   const raw = Math.max(1, x);
   if (raw < 15) return 10;
@@ -244,7 +229,6 @@ function niceStep(x) {
   if (raw < 75) return 50;
   return Math.round(raw / 50) * 50;
 }
-
 // ===== API =====
 async function checkHealth() {
   setHealthStatus("checking", "API: Checking…");
@@ -261,7 +245,6 @@ async function checkHealth() {
     if (healthRetryBtn) healthRetryBtn.disabled = false;
   }
 }
-
 function setHealthStatus(state, label) {
   if (!healthChip) return;
   healthChip.textContent = label;
@@ -271,7 +254,6 @@ function setHealthStatus(state, label) {
   else cls += "status-badge--muted";
   healthChip.className = cls;
 }
-
 async function jsonPost(path, body) {
   const url = `${normaliseBase(apiBase)}${path}`;
   let response;
@@ -300,7 +282,6 @@ async function jsonPost(path, body) {
   }
   return data;
 }
-
 // ===== Patient Review – Demo buttons =====
 if (guardrailAdultDemo) {
   guardrailAdultDemo.addEventListener("click", () => {
@@ -330,26 +311,22 @@ if (guardrailPaedsDemo) {
     });
   });
 }
-
 // ===== Patient Review – Submit =====
 if (guardrailForm && guardrailSubmit) {
   guardrailForm.addEventListener("submit", async event => {
     event.preventDefault();
     clearMsg(guardrailError);
-
     const hr = Number(guardrailForm.heart_rate.value);
     const pr = Number(guardrailForm.PR_ms.value);
     const qrs = Number(guardrailForm.QRS_ms.value);
     const qt = Number(guardrailForm.QT_ms.value);
     const rr = Number(guardrailForm.RR_ms.value);
-
     if (!(hr > 0 && pr > 0 && qrs > 0 && qt > 0 && rr > 0)) {
       return showMsg(
         guardrailError,
         "Please enter all intervals as positive numbers."
       );
     }
-
     const payload = {
       age_band: mapAgeBandToEnum(guardrailForm.age_band.value),
       sex: guardrailForm.sex.value,
@@ -364,11 +341,12 @@ if (guardrailForm && guardrailSubmit) {
       // For now the backend only supports Fridericia
       qtc_method: "fridericia"
     };
-
     try {
       setBusy(guardrailSubmit, true);
       const result = await jsonPost("/guardrail/score", payload);
-      renderGuardrailResult(result, payload);
+      _lastGuardrailPayload = payload;
+      _lastGuardrailResult = result;
+      renderGuardrailResult(result); // Argument changed
       hide(backendBanner);
     } catch (err) {
       showMsg(guardrailError, extractErrorMessage(err));
@@ -377,7 +355,6 @@ if (guardrailForm && guardrailSubmit) {
     }
   });
 }
-
 function fillGuardrailForm(v) {
   if (!guardrailForm) return;
   guardrailForm.age_band.value = labelFromEnum(v.age_band);
@@ -395,152 +372,158 @@ function fillGuardrailForm(v) {
     r.checked = r.value === "fridericia";
   });
 }
-
 // ===== Patient Review – Render =====
-function renderGuardrailResult(result, payload) {
+function renderGuardrailResult(result) {
+  if (!guardrailResult) return;
+
   clearContainer(guardrailResult);
+  if (guardrailRecs) clearContainer(guardrailRecs);
+
   if (!result || typeof result !== "object") return;
 
-  const computed = result.computed ?? {};
-  const qtc = defined(computed.QTc_ms) ? computed.QTc_ms : null;
-  const band = computed.percentile || null;
-  const refv = computed.ref_version || null;
-
-  const card = document.createElement("article");
-  card.className = "result-card";
-
-  const header = document.createElement("div");
-  header.className = "result-header";
-  const h3 = document.createElement("h3");
-  h3.textContent = "Assessment";
-  header.appendChild(h3);
-  header.appendChild(renderPercentileBadge(band || "—"));
-  card.appendChild(header);
-
-  const headline = document.createElement("p");
-  headline.className = "result-summary";
-  const sex = (payload?.sex || "").toLowerCase();
-  const ageLabel = labelFromEnum(payload?.age_band);
-
-  if (defined(qtc) && band) {
-    const sev = severityFromPercentileLabel(band);
-    let word = "Normal";
-    if (sev === "high") word = "Prolonged";
-    else if (sev === "borderline") word = "Borderline";
-    headline.textContent = `${word} QTc for ${ageLabel} ${sex} — ${qtc} ms (${band}).`;
-  } else if (defined(qtc)) {
-    headline.textContent = `Computed QTc ${qtc} ms for ${ageLabel} ${sex}.`;
-  } else {
-    headline.textContent = "No QTc computed — missing or invalid intervals.";
-  }
-  card.appendChild(headline);
-
-  // Key metrics
-  const grid = document.createElement("div");
-  grid.className = "kv-grid";
-  grid.appendChild(kvItem("QTc (ms)", defined(qtc) ? qtc : "—"));
-  grid.appendChild(kvItem("Percentile", band || "—"));
-  grid.appendChild(kvItem("Reference pack", refv || "—"));
-  card.appendChild(grid);
-
-  // Assessments table
+  const computed = result.computed || {};
   const assessments = Array.isArray(result.assessments)
     ? result.assessments
     : [];
-  if (assessments.length) {
-    const t = document.createElement("table");
-    t.className = "assess-table";
-    t.innerHTML =
-      "<thead><tr><th>Parameter</th><th>Status</th><th>Rationale</th></tr></thead><tbody></tbody>";
-    const tb = t.querySelector("tbody");
 
-    assessments.forEach((row, idx) => {
-      const status = row?.status || (typeof row === "string" ? row : "—");
-      const parameter =
-        row?.metric ||
-        row?.parameter ||
-        ["HR_bpm", "PR_ms", "QRS_ms", "QTc_ms"][idx] ||
-        "—";
-      const rationale =
-        row?.rationale ||
-        row?.reason ||
-        (status === "GREEN"
-          ? "Within reference range for this age/sex band."
-          : status === "AMBER"
-          ? "Near the edge of the reference range — interpret in clinical context."
-          : status === "RED"
-          ? "Outside reference range — review in context."
-          : "—");
+  const qtc = computed.QTc_ms;
+  const percentile = computed.percentile || null;
+  const refVersion = computed.ref_version || "";
+
+  // Demographic label from last payload (if available)
+  let demoText = null;
+  if (_lastGuardrailPayload) {
+    const ageLabel = labelFromEnum(_lastGuardrailPayload.age_band);
+    const sexRaw = _lastGuardrailPayload.sex;
+    const sex =
+      sexRaw && typeof sexRaw === "string"
+        ? sexRaw.charAt(0).toUpperCase() + sexRaw.slice(1)
+        : null;
+
+    const bits = [];
+    if (ageLabel) bits.push(ageLabel);
+    if (sex) bits.push(sex);
+    if (bits.length) demoText = bits.join(" • ");
+  }
+
+  // === Summary block ===
+  const header = document.createElement("div");
+  header.className = "result-header";
+
+  if (typeof qtc === "number") {
+    const p = document.createElement("p");
+    const pctText = percentile ? ` (${percentile})` : "";
+    if (demoText) {
+      p.textContent = `QTc for ${demoText} — ${qtc.toFixed(
+        0
+      )} ms${pctText}.`;
+    } else {
+      p.textContent = `QTc — ${qtc.toFixed(0)} ms${pctText}.`;
+    }
+    header.appendChild(p);
+  }
+
+  if (refVersion) {
+    const refP = document.createElement("p");
+    refP.className = "muted";
+    refP.textContent = `Reference pack ${refVersion}`;
+    header.appendChild(refP);
+  }
+
+  guardrailResult.appendChild(header);
+
+  // === Assessment table ===
+  if (assessments.length) {
+    const table = document.createElement("table");
+    table.className = "table";
+
+    const thead = document.createElement("thead");
+    thead.innerHTML = `
+      <tr>
+        <th>Parameter</th>
+        <th>Status</th>
+        <th>Rationale</th>
+      </tr>
+    `;
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+
+    assessments.forEach(a => {
+      if (!a || !a.metric) return;
 
       const tr = document.createElement("tr");
-      const tdP = document.createElement("td");
-      tdP.textContent = parameter;
-      const tdS = document.createElement("td");
-      tdS.appendChild(renderStatusBadge(status));
-      const tdR = document.createElement("td");
-      tdR.textContent = rationale;
-      tr.append(tdP, tdS, tdR);
-      tb.appendChild(tr);
+
+      const tdMetric = document.createElement("td");
+      tdMetric.textContent = a.metric;
+      tr.appendChild(tdMetric);
+
+      const tdStatus = document.createElement("td");
+      tdStatus.appendChild(renderStatusBadge(a.status || "—"));
+      tr.appendChild(tdStatus);
+
+      const tdRationale = document.createElement("td");
+      tdRationale.textContent = a.rationale || "";
+      tr.appendChild(tdRationale);
+
+      tbody.appendChild(tr);
     });
 
-    card.appendChild(t);
+    table.appendChild(tbody);
+    guardrailResult.appendChild(table);
   }
 
-  guardrailResult.appendChild(card);
-
-  // Dynamic recommendations (aligned with QTc risk concepts)
+  // === Recommendations list ===
   if (guardrailRecs) {
-    const qtcAssessment = assessments.find(a => a.metric === "QTc_ms");
-    const qtcStatus = qtcAssessment?.status || null;
-    const sev = severityFromPercentileLabel(band);
-    const highRiskQtc = defined(qtc) && qtc >= 500;
+    const recLines = [];
+    const hasOutOfRange = assessments.some(
+      a => a && a.status && a.status !== "GREEN"
+    );
 
-    let items = [];
-
-    if (highRiskQtc || sev === "high") {
-      items = [
-        "Treat QTc as high-risk — check and correct K⁺/Mg²⁺ urgently.",
-        "Review and rationalise QT-prolonging medications; avoid stacking.",
-        "Arrange repeat ECG and escalate as per local arrhythmia / cardiology pathways.",
-        "Ensure this is clearly documented in the clinical record."
-      ];
-    } else if (qtcStatus === "RED" || qtcStatus === "AMBER") {
-      items = [
-        "QTc is at or beyond the upper reference limit — interpret with symptoms and comorbidities.",
-        "Review medication list for QT-prolonging agents and consider dose changes or alternatives.",
-        "Repeat ECG if the clinical picture changes or new drugs are added.",
-        "Document the finding and communicate to the responsible clinician."
-      ];
-    } else {
-      items = [
-        "QTc is within the reference range for this demographic.",
-        "No interval-based red flags identified from this single reading.",
-        "Document the ECG review and continue routine follow-up as per local policy."
-      ];
+    if (typeof qtc === "number") {
+      if (percentile) {
+        recLines.push(
+          `QTc falls in the ${percentile} band for this demographic based on the reference data used in this demo.`
+        );
+      } else {
+        recLines.push(
+          "QTc is reported within the reference data range used for this demo."
+        );
+      }
     }
 
-    guardrailRecs.innerHTML = `
-      <h4>Recommendations</h4>
-      <ul>${items.map(li => `<li>${li}</li>`).join("")}</ul>
-    `;
+    if (hasOutOfRange) {
+      recLines.push(
+        "One or more intervals lie outside the reference ranges used by this tool and are flagged for awareness."
+      );
+    } else {
+      recLines.push(
+        "No interval-based red flags were identified from this single reading."
+      );
+    }
+
+    const reliabilityNote = qtcReliabilityNoteFromLast();
+    if (reliabilityNote) recLines.push(reliabilityNote);
+
+    recLines.push(
+      "Document the ECG review and act according to local policy. This output is non-diagnostic and for demonstration only."
+    );
+
+    recLines.forEach(text => {
+      const li = document.createElement("li");
+      li.textContent = text;
+      guardrailRecs.appendChild(li);
+    });
   }
 
-  if (result.red_flags && result.red_flags.length) {
-    const p = document.createElement("p");
-    p.innerHTML =
-      "Red-flag rules fired (demo only): " +
-      result.red_flags.map(x => `<strong>${x}</strong>`).join(", ");
-    card.appendChild(p);
-  }
-
-  const small = document.createElement("p");
-  small.className = "muted";
-  small.textContent =
+  // === Disclaimer line ===
+  const disclaimer = document.createElement("p");
+  disclaimer.className = "muted";
+  disclaimer.textContent =
     result.disclaimer ||
     "DEMONSTRATION ONLY — SYNTHETIC DATA — NOT FOR CLINICAL USE.";
-  card.appendChild(small);
+  guardrailResult.appendChild(disclaimer);
 }
-
 function kvItem(k, v) {
   const wrap = document.createElement("div");
   wrap.className = "kv-item";
@@ -554,7 +537,6 @@ function kvItem(k, v) {
   wrap.appendChild(vv);
   return wrap;
 }
-
 // ===== Patient Trends – Table + Submit =====
 function updateTrendTable() {
   if (!trendTableBody) return;
@@ -567,30 +549,25 @@ function updateTrendTable() {
     trendTableBody.appendChild(tr);
   });
 }
-
 if (trendForm && trendSubmit) {
   trendForm.addEventListener("submit", async event => {
     event.preventDefault();
     clearMsg(trendError);
-
     const timestamp = toIsoDate((trendDateInput.value || "").trim());
     const qt = Number(trendQtInput.value);
     const rr = Number(trendRrInput.value);
-
     if (!timestamp || !(qt > 0) || !(rr > 0)) {
       return showMsg(
         trendError,
         "Enter a reading date plus QT (ms) and RR (ms)."
       );
     }
-
     // Add new reading into local history and keep it sorted
     historicalReadings.push({ timestamp, QT_ms: qt, RR_ms: rr });
     historicalReadings.sort(
       (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
     );
     updateTrendTable();
-
     const payload = {
       age_band: mapAgeBandToEnum(trendAgeSelect.value),
       sex: trendSexSelect.value,
@@ -601,7 +578,6 @@ if (trendForm && trendSubmit) {
         RR_ms: r.RR_ms
       }))
     };
-
     try {
       setBusy(trendSubmit, true);
       const result = await jsonPost("/trend/series", payload);
@@ -614,14 +590,14 @@ if (trendForm && trendSubmit) {
     }
   });
 }
-
 // ===== Patient Trends – Render + Chart =====
 function renderTrendResult(payload, result) {
+  _lastTrendPayload = payload;
+  _lastTrendResult = result;
   clearContainer(trendResult);
   if (!result || typeof result !== "object") return;
   const seriesFromApi = Array.isArray(result.series) ? result.series : [];
   if (!seriesFromApi.length) return;
-
   // Build lookup: timestamp -> QT/RR from payload
   const readingByTs = {};
   if (Array.isArray(payload.readings)) {
@@ -633,7 +609,6 @@ function renderTrendResult(payload, result) {
       };
     });
   }
-
   const series = seriesFromApi.map(p => {
     const key = toIsoDate(p.timestamp);
     const base = readingByTs[key] || {};
@@ -645,26 +620,21 @@ function renderTrendResult(payload, result) {
       RR_ms: base.RR_ms ?? null
     };
   });
-
   if (!series.length) return;
   window._latestSeries = series;
-
   const latest = series[series.length - 1];
   const prev = series.length >= 2 ? series[series.length - 2] : null;
   const delta =
     latest && prev && defined(latest.QTc_ms) && defined(prev.QTc_ms)
       ? Math.round((latest.QTc_ms - prev.QTc_ms) * 10) / 10
       : null;
-
   const recordedOn = latest.timestamp || "—";
   const latestQt = latest.QTc_ms;
   const bandLabel = latest.percentile || "—";
   const sev = severityFromPercentileLabel(bandLabel);
   const highRisk = defined(latestQt) && latestQt >= 500;
-
   const card = document.createElement("article");
   card.className = "result-card";
-
   const grid = document.createElement("div");
   grid.className = "kv-grid";
   grid.appendChild(kvItem("Recorded on", recordedOn));
@@ -673,14 +643,12 @@ function renderTrendResult(payload, result) {
     kvItem("Latest QTc (ms)", defined(latestQt) ? latestQt.toFixed(1) : "—")
   );
   card.appendChild(grid);
-
   // Replace Δ tile with an up/down badge if we have a delta
   const deltaTile = grid.childNodes[1]?.querySelector(".kv-val");
   if (deltaTile && defined(delta)) {
     deltaTile.textContent = "";
     deltaTile.appendChild(deltaBadge(Number(delta)));
   }
-
   // Percentile chip + narrative
   if (trendBandChip) {
     trendBandChip.className = badgeClassFromSeverity(sev);
@@ -701,7 +669,6 @@ function renderTrendResult(payload, result) {
         defined(delta) && delta !== 0
           ? `QTc has ${dir} by ${absDelta} ms since the last reading. `
           : "";
-
       if (highRisk) {
         trendNarrative.textContent = `${trendBit}Current QTc (${latestQt.toFixed(
           1
@@ -717,22 +684,18 @@ function renderTrendResult(payload, result) {
       }
     }
   }
-
   // Chart block
   const wrap = document.createElement("div");
   wrap.className = "chart-wrap";
   const canvasWrap = document.createElement("div");
   canvasWrap.className = "canvas-wrap";
   wrap.appendChild(canvasWrap);
-
   const canvas = document.createElement("canvas");
   canvas.id = "trend-canvas";
   canvasWrap.appendChild(canvas);
   if (chartTooltip) canvasWrap.appendChild(chartTooltip);
-
   card.appendChild(wrap);
   trendResult.appendChild(card);
-
   // Extract percentile bands from response for the shaded areas
   const bands = result.bands || {};
   const bandValues = {
@@ -740,16 +703,13 @@ function renderTrendResult(payload, result) {
     p90: Array.isArray(bands.p90) && bands.p90[0] ? bands.p90[0].y : null,
     p99: Array.isArray(bands.p99) && bands.p99[0] ? bands.p99[0].y : null
   };
-
   drawTrendChart(canvas, series, bandValues);
   installChartTooltip(canvas);
 }
-
 function drawTrendChart(canvas, series, bandValues) {
   if (!canvas || !Array.isArray(series) || !series.length) return;
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
-
   const DPR = window.devicePixelRatio || 1;
   const Wcss = canvas.clientWidth || 720;
   const Hcss = 300;
@@ -758,7 +718,6 @@ function drawTrendChart(canvas, series, bandValues) {
   canvas.style.width = Wcss + "px";
   canvas.style.height = Hcss + "px";
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-
   const parseT = s => new Date(s).getTime();
   const pts = series
     .map(p => ({
@@ -769,21 +728,18 @@ function drawTrendChart(canvas, series, bandValues) {
     .filter(p => Number.isFinite(p.t) && defined(p.q))
     .sort((a, b) => a.t - b.t);
   if (!pts.length) return;
-
   const padL = 48,
     padR = 16,
     padT = 32,
     padB = 36;
   const W = Wcss,
     H = Hcss;
-
   const qVals = pts.map(p => p.q);
   const tVals = pts.map(p => p.t);
   const minQ = Math.min(...qVals) - 10;
   const maxQ = Math.max(...qVals) + 10;
   const minT = Math.min(...tVals);
   const maxT = Math.max(...tVals);
-
   const x = t =>
     padL +
     ((W - padL - padR) * (t - minT)) / Math.max(1, maxT - minT);
@@ -797,9 +753,7 @@ function drawTrendChart(canvas, series, bandValues) {
     w: W - padL - padR,
     h: H - padT - padB
   };
-
   ctx.clearRect(0, 0, W, H);
-
   // Shaded percentile bands from backend
   const yBands = {};
   if (bandValues && typeof bandValues === "object") {
@@ -814,7 +768,6 @@ function drawTrendChart(canvas, series, bandValues) {
   ) {
     drawBands(ctx, plotRect, yBands);
   }
-
   // Axes
   ctx.strokeStyle = "#e2e8f0";
   ctx.lineWidth = 1;
@@ -823,7 +776,6 @@ function drawTrendChart(canvas, series, bandValues) {
   ctx.lineTo(padL, H - padB);
   ctx.lineTo(W - padR, H - padB);
   ctx.stroke();
-
   // Y ticks
   ctx.fillStyle = "#64748b";
   ctx.font =
@@ -842,7 +794,6 @@ function drawTrendChart(canvas, series, bandValues) {
     ctx.stroke();
     ctx.fillText(Math.round(q), 8, yy + 4);
   }
-
   // X ticks (dates)
   const tickCount = Math.min(pts.length, 6);
   for (let i = 0; i < tickCount; i++) {
@@ -853,7 +804,6 @@ function drawTrendChart(canvas, series, bandValues) {
     const xx = x(pts[j].t);
     ctx.fillText(label, xx - 18, H - padB + 22);
   }
-
   // Title + legend
   ctx.fillStyle = "#111827";
   ctx.font =
@@ -863,7 +813,6 @@ function drawTrendChart(canvas, series, bandValues) {
     plotRect.x,
     plotRect.y - 8
   );
-
   const legendItems = [
     { label: "QTc (ms)", swatch: "#2563eb" },
     { label: "Percentile bands", swatch: "#94a3b8" }
@@ -879,7 +828,6 @@ function drawTrendChart(canvas, series, bandValues) {
       "12px system-ui, -apple-system, Segoe UI, Roboto";
     ctx.fillText(item.label, xPos + 16, ly);
   });
-
   // Line
   ctx.strokeStyle = "#2563eb";
   ctx.lineWidth = 2;
@@ -891,7 +839,6 @@ function drawTrendChart(canvas, series, bandValues) {
     else ctx.lineTo(px, py);
   });
   ctx.stroke();
-
   // Points + highlight last
   _plottedPoints = [];
   pts.forEach((p, i) => {
@@ -918,7 +865,6 @@ function drawTrendChart(canvas, series, bandValues) {
     }
   });
 }
-
 function drawBands(ctx, plot, bands) {
   ctx.save();
   // Normal band (<= p50)
@@ -953,11 +899,9 @@ function drawBands(ctx, plot, bands) {
   }
   ctx.restore();
 }
-
 function installChartTooltip(canvas) {
   if (!canvas || !chartTooltip) return;
   const rectFor = () => canvas.getBoundingClientRect();
-
   canvas.addEventListener("mousemove", e => {
     if (!_plottedPoints.length) return;
     const rect = rectFor();
@@ -965,7 +909,6 @@ function installChartTooltip(canvas) {
     const my = e.clientY - rect.top;
     let best = null;
     let bestDist = 9999;
-
     for (const pt of _plottedPoints) {
       const dx = mx - pt.x;
       const dy = my - pt.y;
@@ -975,7 +918,6 @@ function installChartTooltip(canvas) {
         bestDist = d2;
       }
     }
-
     if (best) {
       chartTooltip.style.display = "block";
       chartTooltip.style.left = `${best.x}px`;
@@ -993,12 +935,10 @@ function installChartTooltip(canvas) {
       chartTooltip.style.display = "none";
     }
   });
-
   canvas.addEventListener("mouseleave", () => {
     chartTooltip.style.display = "none";
   });
 }
-
 // ===== Utils (render + messaging) =====
 function clearContainer(el) {
   if (!el) return;
@@ -1010,7 +950,6 @@ function show(el) {
 function hide(el) {
   if (el) el.classList.add("hide");
 }
-
 function setBusy(btn, isBusy) {
   if (!btn) return;
   if (!btn.dataset.idle) btn.dataset.idle = btn.textContent;
@@ -1028,7 +967,6 @@ function setBusySuccess(btn, successLabel = "✓ Complete", revertMs = 1200) {
     btn.textContent = idle;
   }, revertMs);
 }
-
 function extractErrorMessage(error) {
   if (error instanceof ApiError) {
     const d = error.detail;
@@ -1055,7 +993,20 @@ function clearMsg(el) {
     hide(el);
   }
 }
-
+// --- QTc reliability helper (mirrors backend _qtc_reliability_note) ---
+function qtcReliabilityNoteFromLast() {
+  if (!_lastGuardrailPayload || !_lastGuardrailPayload.intervals) return null;
+  const rawHr = _lastGuardrailPayload.intervals.HR_bpm;
+  const hr = Number(rawHr);
+  if (!Number.isFinite(hr)) return null;
+  if (hr < 50) {
+    return "QTc values at very low heart rates may be less reliable and should be interpreted with caution.";
+  }
+  if (hr > 120) {
+    return "QTc values at very high heart rates may be less reliable and should be rendered with caution.";
+  }
+  return null;
+}
 // ===== Header wiring =====
 if (healthRetryBtn) {
   healthRetryBtn.addEventListener("click", checkHealth);
@@ -1065,7 +1016,6 @@ if (apiBaseInput) {
     setApiBaseDisplay(e.target.value)
   );
 }
-
 const exportBtn = document.getElementById("export-csv");
 if (exportBtn) {
   exportBtn.addEventListener("click", () => {
@@ -1094,13 +1044,105 @@ if (exportBtn) {
     URL.revokeObjectURL(url);
   });
 }
-
 const printBtn = document.getElementById("print-report");
 if (printBtn) {
   printBtn.addEventListener("click", () => {
     window.print();
   });
 }
-
+if (aiForm && aiGenerateBtn) {
+  aiForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    clearMsg(aiError);
+    clearContainer(aiResult);
+    if (!_lastGuardrailPayload || !_lastGuardrailResult) {
+      return showMsg(
+        aiError,
+        "Run a Patient Review first so the AI summary has QTc and interval context."
+      );
+    }
+    const ageLabel = aiAgeSelect
+      ? aiAgeSelect.value
+      : labelFromEnum(_lastGuardrailPayload.age_band);
+    const sex = aiSexSelect
+      ? aiSexSelect.value
+      : _lastGuardrailPayload.sex;
+    const ageEnum = mapAgeBandToEnum(ageLabel);
+    const intervals = _lastGuardrailPayload.intervals || {};
+    const computed = _lastGuardrailResult.computed || {};
+    const qtc = computed.QTc_ms ?? null;
+    const pctBand = computed.percentile || null;
+    const redFlags = Array.isArray(_lastGuardrailResult.red_flags)
+      ? _lastGuardrailResult.red_flags
+      : [];
+    // Optional trend comment
+    let trendComment = null;
+    if (_lastTrendResult && trendNarrative && trendNarrative.textContent) {
+      trendComment = trendNarrative.textContent;
+    }
+    const body = {
+      age_band: ageEnum,
+      sex,
+      intervals: {
+        HR_bpm: intervals.HR_bpm,
+        PR_ms: intervals.PR_ms,
+        QRS_ms: intervals.QRS_ms,
+        QT_ms: intervals.QT_ms,
+        RR_ms: intervals.RR_ms
+      },
+      qtc_ms: qtc,
+      percentile_band: pctBand,
+      red_flags: redFlags,
+      trend_comment: trendComment
+    };
+    try {
+      setBusy(aiGenerateBtn, true);
+      const result = await jsonPost("/ai/narrative", body);
+      renderAiSummary(result);
+      hide(backendBanner);
+    } catch (err) {
+      showMsg(aiError, extractErrorMessage(err));
+    } finally {
+      setBusySuccess(aiGenerateBtn, "✓ Summary ready");
+    }
+  });
+}
+function renderAiSummary(result) {
+  clearContainer(aiResult);
+  if (!result || typeof result !== "object") return;
+  const card = document.createElement("article");
+  card.className = "result-card";
+  const h3 = document.createElement("h3");
+  h3.textContent = "AI ECG Summary (non-diagnostic)";
+  card.appendChild(h3);
+  const p = document.createElement("p");
+  p.className = "result-summary";
+  p.textContent = result.narrative || "No narrative generated.";
+  card.appendChild(p);
+  if (Array.isArray(result.key_points) && result.key_points.length) {
+    const ul = document.createElement("ul");
+    ul.className = "recs";
+    result.key_points.forEach(item => {
+      const li = document.createElement("li");
+      li.textContent = item;
+      ul.appendChild(li);
+    });
+    card.appendChild(ul);
+  }
+  if (Array.isArray(result.caution_flags) && result.caution_flags.length) {
+    const pFlags = document.createElement("p");
+    pFlags.innerHTML =
+      "Caution flags (non-diagnostic): " +
+      result.caution_flags.map(x => `<strong>${x}</strong>`).join(", ");
+    card.appendChild(pFlags);
+  }
+  const small = document.createElement("p");
+  small.className = "muted";
+  small.textContent =
+    result.disclaimer ||
+    "DEMONSTRATION ONLY — SYNTHETIC DATA — NOT FOR CLINICAL USE.";
+  card.appendChild(small);
+  aiResult.appendChild(card);
+}
 // Kick off health check on load
 checkHealth();

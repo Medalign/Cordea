@@ -136,3 +136,19 @@ class AuditEntry(BaseModel):
 class MetricsResponse(BaseModel):
     counters: Dict[str, int]
     timings_ms: Dict[str, float]
+
+class NarrativeRequest(BaseModel):
+    age_band: str
+    sex: Sex
+    intervals: IntervalSet
+    qtc_ms: Optional[float] = None
+    percentile_band: Optional[str] = None
+    red_flags: List[str] = []
+    trend_comment: Optional[str] = None
+
+
+class NarrativeResponse(BaseModel):
+    narrative: str
+    key_points: List[str]
+    caution_flags: List[str]
+    disclaimer: str
