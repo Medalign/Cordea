@@ -13,7 +13,6 @@
     <header class="header">
       <div class="header__logo">
         <h1 class="header__logo-text">Cordea</h1>
-        <span class="header__subtitle">Patient Review — Encounter Summary</span>
       </div>
 
       <div id="digital-clock" class="digital-clock">00:00:00</div>
@@ -69,6 +68,9 @@
 
       <!-- Main Content -->
       <main class="main">
+        <h1 class="main__heading">Patient Review — Encounter Summary</h1>
+        <p class="main__desc">Evaluate ECG intervals with age and sex-specific QTc percentile assessment</p>
+
         <!-- Input Form Card -->
         <div class="action-card">
           <div class="action-header">
@@ -168,19 +170,16 @@
               />
             </div>
 
-            <fieldset class="form-group">
+            <div class="form-group">
               <label class="form-label">QTc method</label>
-              <div style="display: flex; gap: 1.8rem; align-items: center; margin-top: 0.5rem;">
-                <label style="display: flex; gap: 0.6rem; align-items: center; font-weight: normal; color: var(--text-secondary); cursor: pointer;">
-                  <input type="radio" name="qtc_method" value="bazett" />
-                  Bazett
-                </label>
-                <label style="display: flex; gap: 0.6rem; align-items: center; font-weight: normal; color: var(--text-secondary); cursor: pointer;">
-                  <input type="radio" name="qtc_method" value="fridericia" checked />
-                  Fridericia
-                </label>
+              <div class="toggle-switch">
+                <input type="radio" name="qtc_method" id="qtc-bazett" value="bazett" />
+                <input type="radio" name="qtc_method" id="qtc-fridericia" value="fridericia" checked />
+                <label for="qtc-bazett" class="toggle-option">Bazett</label>
+                <label for="qtc-fridericia" class="toggle-option">Fridericia</label>
+                <div class="toggle-slider"></div>
               </div>
-            </fieldset>
+            </div>
 
             <div class="grid-row-end">
               <button id="guardrail-submit" class="btn btn-primary" type="submit">

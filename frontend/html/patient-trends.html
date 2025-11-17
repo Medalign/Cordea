@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cordea — Patient Trends</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/patient-trends.css">
+</head>
+<body>
+  <div class="dash">
+    <!-- Header -->
+    <header class="header">
+      <div class="header__logo">
+        <h1 class="header__logo-text">Cordea</h1>
+      </div>
+
+      <div id="digital-clock" class="digital-clock">00:00:00</div>
+
+      <div class="header__options">
+        <div class="api-status">
+          <span id="health-chip" class="status-badge">Checking...</span>
+          <button id="health-retry" class="btn btn-secondary btn-small">Retry</button>
+        </div>
+
+        <button id="theme-toggle" class="theme-toggle">🌙 Dark</button>
+      </div>
+    </header>
+
+    <div class="body">
+      <!-- Sidebar -->
+      <aside id="sidebar" class="sidebar">
+        <button id="sidebar-toggle" class="sidebar__toggle" aria-label="Toggle sidebar">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+
+        <nav class="sidebar__nav">
+          <ul style="list-style: none; padding: 0; margin: 0;">
+            <li class="sidebar__item">
+              <a href="patient-review.html" class="sidebar__link">
+                <svg class="sidebar__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span class="sidebar__text">Patient Review</span>
+              </a>
+            </li>
+            <li class="sidebar__item">
+              <a href="patient-trends.html" class="sidebar__link sidebar__link--active">
+                <svg class="sidebar__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <span class="sidebar__text">Patient Trends</span>
+              </a>
+            </li>
+            <li class="sidebar__item">
+              <a href="ai-summary.html" class="sidebar__link">
+                <svg class="sidebar__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <span class="sidebar__text">AI Summary</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main">
+        <h1 class="main__heading">Patient Trends — QTc Monitoring</h1>
+        <p class="main__desc">Track QTc changes over time to detect medication-related prolongation and drift into risk zones</p>
+
+        <!-- Input Form Card -->
+        <div class="action-card">
+          <div class="action-header">
+            <span>Patient Demographics & Historical Data</span>
+          </div>
+
+          <form id="trend-form" class="grid grid--two">
+            <div class="form-group">
+              <label class="form-label" for="trend-age-band">Age band</label>
+              <select id="trend-age-band" class="form-select">
+                <option>18–39 years</option>
+                <option>40–64 years</option>
+                <option selected>65+ years</option>
+                <option>6–12 years</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="trend-sex">Sex</label>
+              <select id="trend-sex" class="form-select">
+                <option value="male" selected>Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+
+            <div class="history-section">
+              <h4 class="section-subtitle">Historical QT and RR readings</h4>
+              <div class="table-container">
+                <table class="history-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>QT (ms)</th>
+                      <th>RR (ms)</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="trend-table-body">
+                    <!-- Populated by JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="trend-date">Reading date</label>
+              <input id="trend-date" class="form-input" type="text" placeholder="YYYY-MM-DD" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="trend-qt">New QT (ms)</label>
+              <input id="trend-qt" class="form-input" type="number" inputmode="numeric" placeholder="e.g. 475" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="trend-rr">RR (ms)</label>
+              <input id="trend-rr" class="form-input" type="number" inputmode="numeric" placeholder="e.g. 1000" />
+            </div>
+
+            <div class="grid-row-end">
+              <button id="trend-submit" class="btn btn-primary" type="submit">
+                Evaluate New Reading
+              </button>
+            </div>
+          </form>
+
+          <p id="trend-error" class="status-error-badge hide"></p>
+        </div>
+
+        <!-- Trend Summary -->
+        <div id="trend-summary" class="hide">
+          <div class="trend-cards">
+            <div class="trend-card">
+              <div class="trend-card-label">Latest QTc</div>
+              <div class="trend-card-value" id="latest-qtc">—</div>
+              <div class="trend-card-unit">ms</div>
+            </div>
+
+            <div class="trend-card">
+              <div class="trend-card-label">Change (ΔQTc)</div>
+              <div class="trend-card-value" id="delta-qtc">—</div>
+              <div class="trend-card-unit">ms</div>
+            </div>
+
+            <div class="trend-card">
+              <div class="trend-card-label">Percentile Band</div>
+              <div id="percentile-badge" class="trend-card-badge">—</div>
+            </div>
+          </div>
+
+          <div class="trend-narrative-card">
+            <p id="trend-narrative" class="narrative-text">—</p>
+          </div>
+
+          <div class="actions-row">
+            <button id="export-csv" class="btn btn-secondary btn-small">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Export CSV
+            </button>
+            <button id="print-report" class="btn btn-secondary btn-small">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+              </svg>
+              Print Report
+            </button>
+          </div>
+        </div>
+
+        <!-- Chart Container -->
+        <div id="chart-container" class="hide">
+          <div class="chart-header">
+            <h3 class="chart-title">QTc Trend — Fridericia</h3>
+            <div class="chart-legend">
+              <div class="legend-item">
+                <span class="legend-swatch legend-swatch--normal"></span>
+                <span>Normal (&lt;50th)</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-swatch legend-swatch--borderline"></span>
+                <span>Borderline (50–90th)</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-swatch legend-swatch--high"></span>
+                <span>Prolonged (&gt;90th)</span>
+              </div>
+            </div>
+          </div>
+          <div class="chart-canvas-container">
+            <canvas id="trend-canvas"></canvas>
+            <div id="chart-tooltip" class="chart-tooltip"></div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Backend Warning Banner -->
+  <div id="backend-warning">
+    ⚠️ FastAPI backend required at http://127.0.0.1:8000
+  </div>
+
+  <!-- Scripts -->
+  <script src="../js/scripts.js"></script>
+  <script src="../js/patient-trends.js"></script>
+</body>
+</html>
