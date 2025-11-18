@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cordea — Waveform QT/QTc Viewer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="app-header__left">
+        <h1 class="app-title">
+          Cordea
+          <span class="app-header__subtitle">Waveform QT/QTc Viewer</span>
+        </h1>
+      </div>
+      <div class="app-header__right">
+        <span id="health-chip" class="status-badge status-badge--muted">
+          Local tools
+        </span>
+      </div>
+    </header>
+
+    <main class="page">
+      <!-- 1. Upload ECG image -->
+      <section class="panel">
+        <h2>1. Upload ECG image</h2>
+        <p class="muted">
+          Select a PNG or JPEG ECG strip. The file is handled locally in this
+          browser only.
+        </p>
+        <div class="field-group">
+          <label for="waveform-file" class="field-label">ECG image file</label>
+          <input
+            type="file"
+            id="waveform-file"
+            accept="image/png,image/jpeg"
+          />
+        </div>
+        <div id="waveform-error" class="error hide"></div>
+      </section>
+
+      <!-- 2. Mark intervals on the waveform -->
+      <section class="panel">
+        <h2>2. Mark intervals on the waveform</h2>
+
+        <div class="waveform-layout">
+          <!-- Left column: controls -->
+          <div class="waveform-controls">
+            <div class="field-group">
+              <label for="ms-per-pixel" class="field-label">
+                Horizontal calibration (ms per pixel)
+              </label>
+              <input
+                id="ms-per-pixel"
+                type="number"
+                step="0.01"
+                min="0.01"
+                value="6.00"
+              />
+              <p class="muted small">
+                For demo use, this is a fixed approximation. In production this
+                would be calibrated to the ECG grid (25 mm/s, 40 ms per mm).
+              </p>
+            </div>
+
+            <div class="field-group">
+              <p class="field-label">Mark mode</p>
+              <div class="btn-row">
+                <button id="btn-mark-q" class="btn btn-small">
+                  Mark Q start
+                </button>
+                <button id="btn-mark-t" class="btn btn-small">
+                  Mark T end
+                </button>
+              </div>
+              <div class="btn-row">
+                <button id="btn-mark-r1" class="btn btn-small">Mark R1</button>
+                <button id="btn-mark-r2" class="btn btn-small">Mark R2</button>
+              </div>
+              <button
+                id="btn-clear-marks"
+                class="btn btn-secondary btn-small"
+                type="button"
+              >
+                Clear marks
+              </button>
+            </div>
+
+            <div class="field-group">
+              <p class="field-label">Current mode</p>
+              <p id="mark-mode-label" class="muted">
+                No active mark. Choose a marker, then click on the waveform.
+              </p>
+            </div>
+
+            <div class="field-group">
+              <p class="field-label">Event log</p>
+              <pre
+                id="waveform-log"
+                class="log-area muted small"
+                aria-live="polite"
+              ></pre>
+            </div>
+          </div>
+
+          <!-- Right column: canvas -->
+          <div class="waveform-canvas-wrap">
+            <canvas
+              id="ecg-canvas"
+              width="1200"
+              height="400"
+              aria-label="ECG waveform canvas"
+            ></canvas>
+            <p class="muted small">
+              After selecting a mark mode, click on the waveform to place the
+              marker. Q/T marks are used to compute QT; R1/R2 are used to
+              compute RR.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Derived intervals and QTc -->
+      <section class="panel">
+        <h2>3. Derived intervals and QTc</h2>
+        <article class="result-card">
+          <div class="kv-grid">
+            <div class="kv-item">
+              <div class="kv-key">QT interval (ms)</div>
+              <div class="kv-val" id="qt-ms">—</div>
+            </div>
+            <div class="kv-item">
+              <div class="kv-key">RR interval (ms)</div>
+              <div class="kv-val" id="rr-ms">—</div>
+            </div>
+            <div class="kv-item">
+              <div class="kv-key">QTc (Fridericia, ms)</div>
+              <div class="kv-val" id="qtc-ms">—</div>
+            </div>
+            <div class="kv-item">
+              <div class="kv-key">QTc classification</div>
+              <div class="kv-val" id="qtc-class">—</div>
+            </div>
+          </div>
+          <p class="muted small">
+            QT and RR are derived from on-screen distances using the configured
+            calibration. QTc is calculated using the Fridericia formula:
+            QTc = QT / RR<sup>1/3</sup>. This is a demonstration-only feature
+            and does not provide diagnostic decisions.
+          </p>
+        </article>
+      </section>
+
+      <!-- Disclaimer -->
+      <section class="panel">
+        <p class="muted">
+          DEMONSTRATION ONLY — UPLOADED DATA — NOT FOR CLINICAL USE. Measurements
+          shown here are for teaching, documentation, and demo purposes only.
+        </p>
+      </section>
+    </main>
+
+    <script src="waveform.js"></script>
+  </body>
+</html>
