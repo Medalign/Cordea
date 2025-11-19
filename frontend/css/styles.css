@@ -245,13 +245,18 @@ body {
   border-radius: 4px;
   padding: 0.6rem 1rem;
   cursor: pointer;
-  transition: background 0.3s, color 0.3s;
+  transition: all 0.2s ease;
   font-size: 1.2rem;
   font-weight: 500;
 }
 
 .theme-toggle:hover {
   background: var(--header-toggle-hover);
+  transform: scale(1.05);
+}
+
+.theme-toggle:active {
+  transform: scale(0.98);
 }
 
 .theme-toggle:focus {
@@ -348,7 +353,11 @@ body {
   color: var(--sidebar-text);
   z-index: 20;
   opacity: 0;
-  transition: opacity 0.3s, color 0.2s;
+  transition: opacity 0.3s, color 0.2s, transform 0.2s;
+}
+
+.sidebar__toggle:hover {
+  transform: scale(1.1);
 }
 
 .sidebar:hover .sidebar__toggle,
@@ -374,7 +383,7 @@ body {
   color: var(--sidebar-text);
   text-decoration: none;
   border-left: 3px solid transparent;
-  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+  transition: all 0.2s ease;
   width: 20rem;
 }
 
@@ -382,6 +391,7 @@ body {
   background-color: var(--panel-hover-bg);
   border-left-color: var(--accent-primary);
   color: var(--sidebar-active);
+  transform: translateX(2px);
 }
 
 .sidebar__link--active {
@@ -448,17 +458,17 @@ body {
   border-radius: 8px;
   padding: 2rem;
   text-align: center;
-  transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
 }
 
 .stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
   background-color: var(--panel-hover-bg);
 }
 
 .dark-mode .stat-card:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.7);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.7);
 }
 
 .stat-number {
@@ -529,7 +539,7 @@ body {
   font-size: 1.4rem;
   background: var(--input-bg);
   color: var(--text-primary);
-  transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+  transition: all 0.2s ease;
 }
 
 .form-textarea {
@@ -543,13 +553,15 @@ body {
   opacity: 0.7;
 }
 
+/* ENHANCED: Focus with glow */
 .form-input:focus,
 .form-select:focus,
 .form-textarea:focus {
   outline: none;
   border-color: var(--accent-primary);
   background: var(--panel-bg);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 0 12px rgba(59, 130, 246, 0.2);
+  transform: translateY(-1px);
 }
 
 .high-contrast-mode .form-input:focus,
@@ -566,8 +578,29 @@ body {
   font-size: 1.4rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+  transition: all 0.2s ease;
   width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ENHANCED: Ripple effect on click */
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn:active::before {
+  width: 300px;
+  height: 300px;
 }
 
 .btn-primary {
@@ -577,7 +610,12 @@ body {
 
 .btn-primary:hover {
   background: var(--accent-secondary);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
 }
 
 .btn-secondary {
@@ -588,6 +626,7 @@ body {
 
 .btn-secondary:hover {
   background: var(--button-secondary-hover);
+  transform: translateY(-1px);
 }
 
 .btn-small {
@@ -634,6 +673,12 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.status-badge:hover {
+  transform: scale(1.05);
 }
 
 .status-queued {
@@ -910,11 +955,23 @@ body {
   z-index: 1000;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   display: none;
+  animation: slide-up 0.3s ease-out;
+}
+
+@keyframes slide-up {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 /* API config styles (removed from header, keep for future use) */
 .api-base {
-  display: none; /* Hidden by default */
+  display: none;
 }
 
 @media screen and (max-width: 900px) {

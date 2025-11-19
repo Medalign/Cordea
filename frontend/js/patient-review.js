@@ -1,5 +1,5 @@
 // ===== PATIENT REVIEW - ENCOUNTER SUMMARY =====
-// Handles ECG interval evaluation and QTc assessment
+// Handles ECG interval evaluation and QTc assessment with enhanced UI
 
 // Keep last successful payload for AI summary
 window._lastGuardrailPayload = null;
@@ -12,6 +12,38 @@ const guardrailAdultDemo = document.getElementById("guardrail-demo-adult");
 const guardrailPaedsDemo = document.getElementById("guardrail-demo-paeds");
 const guardrailError = document.getElementById("guardrail-error");
 const guardrailResult = document.getElementById("guardrail-result");
+
+// ===== RISK CLASSIFICATION (mirrors backend logic.py) =====
+function getRiskCategory(qtc, sex) {
+  if (!qtc || qtc === null || isNaN(qtc)) {
+    return "unknown";
+  }
+
+  const sexNorm = (sex || "").toLowerCase();
+  let normalUpper, borderlineUpper, highRisk;
+
+  if (sexNorm.startsWith("m")) {
+    // Male thresholds
+    normalUpper = 440;
+    borderlineUpper = 449;
+    highRisk = 500;
+  } else if (sexNorm.startsWith("f")) {
+    // Female thresholds
+    normalUpper = 460;
+    borderlineUpper = 469;
+    highRisk = 500;
+  } else {
+    // Generic thresholds
+    normalUpper = 450;
+    borderlineUpper = 479;
+    highRisk = 500;
+  }
+
+  if (qtc < normalUpper) return "normal";
+  if (qtc <= borderlineUpper) return "borderline";
+  if (qtc < highRisk) return "prolonged";
+  return "high";
+}
 
 // ===== DEMO DATA =====
 function loadAdultDemo() {
@@ -70,6 +102,15 @@ async function handleGuardrailSubmit(event) {
     window._lastGuardrailPayload = payload;
     window._lastGuardrailResult = result;
 
+    // ✅ NEW: Save to localStorage for AI Summary page
+    try {
+      localStorage.setItem('cordea_last_guardrail_payload', JSON.stringify(payload));
+      localStorage.setItem('cordea_last_guardrail_result', JSON.stringify(result));
+      console.log("✅ Saved Patient Review data for AI Summary");
+    } catch (err) {
+      console.error("❌ Failed to save to localStorage:", err);
+    }
+
     renderGuardrailResult(result, ageBand, sex);
 
     const backendBanner = document.getElementById("backend-warning");
@@ -81,7 +122,58 @@ async function handleGuardrailSubmit(event) {
   }
 }
 
-// ===== RESULT RENDERING =====
+// ===== GENERATE ASSESSMENT TEXT =====
+function generateAssessmentText(qtcValue, percentile, ageBand, sex) {
+  if (!qtcValue || isNaN(qtcValue)) {
+    return "QTc assessment unavailable due to incomplete data.";
+  }
+
+  const riskCat = getRiskCategory(qtcValue, sex);
+  const ageLabel = labelFromEnum(ageBand);
+
+  if (riskCat === "normal") {
+    return `QTc of ${qtcValue.toFixed(0)} ms falls in the ${percentile} percentile band for ${ageLabel} ${sex} patients. This is within normal limits based on reference data.`;
+  } else if (riskCat === "borderline") {
+    return `QTc of ${qtcValue.toFixed(0)} ms falls in the ${percentile} percentile band for ${ageLabel} ${sex} patients. This is in the borderline range and warrants monitoring.`;
+  } else if (riskCat === "prolonged") {
+    return `QTc of ${qtcValue.toFixed(0)} ms falls in the ${percentile} percentile band for ${ageLabel} ${sex} patients. This represents QTc prolongation.`;
+  } else if (riskCat === "high") {
+    return `QTc of ${qtcValue.toFixed(0)} ms falls in the ${percentile} percentile band for ${ageLabel} ${sex} patients. This is significantly prolonged and represents high risk.`;
+  }
+
+  return `QTc of ${qtcValue.toFixed(0)} ms falls in the ${percentile} percentile band for ${ageLabel} ${sex} patients.`;
+}
+
+// ===== GENERATE RECOMMENDATIONS =====
+function generateRecommendations(qtcValue, riskCategory, redFlags) {
+  const recommendations = [];
+
+  if (riskCategory === "normal") {
+    recommendations.push("QTc within normal limits for this demographic.");
+    recommendations.push("No immediate concerns identified.");
+    recommendations.push("Document in record and continue routine follow-up.");
+  } else if (riskCategory === "borderline") {
+    recommendations.push("QTc in borderline range for this demographic.");
+    recommendations.push("Review medication list for QT-prolonging agents.");
+    recommendations.push("Consider repeat ECG if clinically indicated.");
+  } else if (riskCategory === "prolonged") {
+    recommendations.push("QTc prolongation identified.");
+    recommendations.push("Review medication list and consider adjustment if appropriate.");
+    recommendations.push("Specialist input may be warranted depending on clinical context.");
+  } else if (riskCategory === "high") {
+    recommendations.push("Significantly prolonged QTc identified.");
+    recommendations.push("Urgent review of medications and electrolytes recommended.");
+    recommendations.push("Consider cardiology consultation.");
+  }
+
+  if (redFlags && redFlags.length > 0) {
+    recommendations.push("Additional flags identified - review full assessment.");
+  }
+
+  return recommendations;
+}
+
+// ===== RESULT RENDERING WITH ENHANCEMENTS =====
 function renderGuardrailResult(result, ageBand, sex) {
   clearContainer(guardrailResult);
 
@@ -93,17 +185,27 @@ function renderGuardrailResult(result, ageBand, sex) {
   const computed = result.computed;
   const qtcValue = computed.QTc_ms;
   const percentile = computed.percentile || "—";
-  const assessment = result.assessment || "Assessment not available.";
-  const parameters = result.parameters || [];
 
-  // === HERO ASSESSMENT CARD ===
+  // Generate assessment text from percentile and QTc
+  const assessment = generateAssessmentText(qtcValue, percentile, ageBand, sex);
+
+  // Backend returns 'assessments' not 'parameters'
+  const parameters = result.assessments || [];
+
+  // Determine risk category for gradient
+  const riskCategory = getRiskCategory(qtcValue, sex);
+
+  // Generate recommendations
+  const recommendations = generateRecommendations(qtcValue, riskCategory, result.red_flags);
+
+  // === ENHANCED HERO ASSESSMENT CARD ===
   const heroCard = document.createElement("div");
-  heroCard.className = "hero-card";
+  heroCard.className = `hero-card risk-${riskCategory}`;
 
   const heroInner = document.createElement("div");
   heroInner.className = "hero-inner";
 
-  // QTc Value (large)
+  // QTc Value (larger now - 8rem)
   const qtcDisplay = document.createElement("div");
   qtcDisplay.className = "qtc-display";
   qtcDisplay.innerHTML = `
@@ -118,6 +220,11 @@ function renderGuardrailResult(result, ageBand, sex) {
   const percentileBadge = renderPercentileBadge(percentile);
   percentileBadge.style.fontSize = "1.4rem";
   percentileBadge.style.padding = "0.6rem 1.4rem";
+
+  // Add pulse animation if high risk
+  if (riskCategory === "high" || riskCategory === "prolonged") {
+    percentileBadge.classList.add("pulse-danger");
+  }
 
   const assessmentText = document.createElement("p");
   assessmentText.className = "assessment-text";
@@ -163,7 +270,7 @@ function renderGuardrailResult(result, ageBand, sex) {
   heroCard.appendChild(gaugeSection);
   guardrailResult.appendChild(heroCard);
 
-  // === PARAMETERS GRID ===
+  // === PARAMETERS GRID WITH TOOLTIPS ===
   if (parameters && parameters.length > 0) {
     const paramsSection = document.createElement("div");
     paramsSection.className = "parameters-section";
@@ -182,14 +289,32 @@ function renderGuardrailResult(result, ageBand, sex) {
 
       const paramName = document.createElement("div");
       paramName.className = "param-name";
-      paramName.textContent = param.name.replace("_", " ");
+
+      // ✅ FIXED: Use param.metric instead of param.name
+      const nameText = param.metric.replace("_", " ");
+
+      paramName.innerHTML = `
+        ${nameText}
+        <span class="tooltip-trigger">
+          ?
+          <span class="tooltip">${getTooltipForMetric(param.metric)}</span>
+        </span>
+      `;
+
+      // ✅ FIXED: Get value from stored payload instead of param.value
+      const metricValue = window._lastGuardrailPayload?.intervals?.[param.metric] || null;
 
       const paramValue = document.createElement("div");
       paramValue.className = "param-value";
-      paramValue.textContent = defined(param.value) ? param.value : "—";
+      paramValue.textContent = defined(metricValue) ? metricValue : "—";
 
       const statusBadge = renderStatusBadge(param.status);
       statusBadge.className = badgeClassFromStatus(param.status) + " param-badge";
+
+      // Add pulse animation for RED status
+      if (param.status === "RED") {
+        statusBadge.classList.add("pulse-danger");
+      }
 
       card.appendChild(paramName);
       card.appendChild(paramValue);
@@ -225,7 +350,7 @@ function renderGuardrailResult(result, ageBand, sex) {
   }
 
   // === RECOMMENDATIONS ===
-  if (result.recommendations && result.recommendations.length > 0) {
+  if (recommendations && recommendations.length > 0) {
     const recsSection = document.createElement("div");
     recsSection.className = "recommendations-section";
 
@@ -237,7 +362,7 @@ function renderGuardrailResult(result, ageBand, sex) {
     const recsList = document.createElement("ul");
     recsList.className = "recommendations-list";
 
-    result.recommendations.forEach(rec => {
+    recommendations.forEach(rec => {
       const li = document.createElement("li");
       li.textContent = rec;
       recsList.appendChild(li);
@@ -255,6 +380,20 @@ function renderGuardrailResult(result, ageBand, sex) {
     noteDiv.innerHTML = `<strong>Note:</strong> ${reliabilityNote}`;
     guardrailResult.appendChild(noteDiv);
   }
+}
+
+// ===== TOOLTIP CONTENT HELPER =====
+function getTooltipForMetric(metricName) {
+  const tooltips = {
+    "HR_bpm": "Heart rate: number of beats per minute. Normal range varies by age.",
+    "PR_ms": "PR interval: time from atrial to ventricular activation. Prolonged PR may indicate AV block.",
+    "QRS_ms": "QRS duration: ventricular depolarization time. Widened QRS may indicate conduction delay.",
+    "QTc_ms": "QTc: heart rate-corrected QT interval. Prolonged QTc increases risk of arrhythmias.",
+    "QT_ms": "QT interval: time for ventricular depolarization and repolarization.",
+    "RR_ms": "RR interval: time between consecutive heartbeats."
+  };
+
+  return tooltips[metricName] || "ECG interval measurement";
 }
 
 // Helper to check QTc reliability based on HR

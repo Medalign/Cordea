@@ -30,6 +30,31 @@ const cautionSection = document.getElementById("caution-section");
 const cautionText = document.getElementById("caution-text");
 const disclaimerText = document.getElementById("disclaimer-text");
 
+// ===== LOCALSTORAGE KEYS =====
+const STORAGE_KEY_PAYLOAD = 'cordea_last_guardrail_payload';
+const STORAGE_KEY_RESULT = 'cordea_last_guardrail_result';
+
+// ===== LOAD DATA FROM LOCALSTORAGE =====
+function loadPatientReviewData() {
+  try {
+    const payloadJSON = localStorage.getItem(STORAGE_KEY_PAYLOAD);
+    const resultJSON = localStorage.getItem(STORAGE_KEY_RESULT);
+
+    if (payloadJSON && resultJSON) {
+      window._lastGuardrailPayload = JSON.parse(payloadJSON);
+      window._lastGuardrailResult = JSON.parse(resultJSON);
+      console.log("✅ Loaded Patient Review data from localStorage");
+      return true;
+    } else {
+      console.log("⚠️ No Patient Review data found in localStorage");
+      return false;
+    }
+  } catch (err) {
+    console.error("❌ Failed to load from localStorage:", err);
+    return false;
+  }
+}
+
 // ===== INFO CARD TOGGLE =====
 if (infoToggleBtn && infoCard) {
   infoToggleBtn.addEventListener("click", () => {
@@ -47,6 +72,13 @@ if (infoToggleBtn && infoCard) {
 
 // ===== INITIALIZE =====
 function initializeAISummary() {
+  // ✅ NEW: Load data from localStorage (from separate pages)
+  const hasData = loadPatientReviewData();
+
+  if (!hasData) {
+    console.log("⚠️ No Patient Review data available. User must run Patient Review first.");
+  }
+
   // Pre-populate age/sex if available from Patient Review
   if (window._lastGuardrailPayload) {
     const ageBand = window._lastGuardrailPayload.age_band;

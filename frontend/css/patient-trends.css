@@ -47,6 +47,10 @@
   border-top: 1px solid var(--border-color);
 }
 
+.history-table tbody tr {
+  transition: background 0.2s ease;
+}
+
 .history-table tbody tr:hover {
   background: var(--panel-hover-bg);
 }
@@ -58,23 +62,66 @@
   cursor: pointer;
   padding: 0.4rem;
   border-radius: 4px;
-  transition: background 0.2s;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .history-table .delete-btn:hover {
   background: rgba(239, 68, 68, 0.1);
+  transform: scale(1.1);
 }
 
 .history-table .empty-state {
   text-align: center;
-  padding: 3rem 1.5rem;
+  padding: 4rem 2rem;
   color: var(--text-secondary);
-  font-style: italic;
+}
+
+.empty-state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  gap: 1.5rem;
+}
+
+.empty-state-icon {
+  width: 8rem;
+  height: 8rem;
+  color: var(--text-secondary);
+  opacity: 0.3;
+}
+
+.empty-state-text {
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 400px;
+}
+
+.empty-state-hint {
+  font-size: 1.3rem;
+  color: var(--text-secondary);
+  opacity: 0.7;
+  text-align: center;
 }
 
 /* ===== TREND SUMMARY CARDS ===== */
 #trend-summary {
   margin-top: 2.5rem;
+  animation: fade-in 0.4s ease-out;
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .trend-cards {
@@ -90,16 +137,16 @@
   border-radius: 12px;
   padding: 2rem;
   text-align: center;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .trend-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .dark-mode .trend-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
 }
 
 .trend-card-label {
@@ -131,7 +178,6 @@
   margin-top: 0.5rem;
 }
 
-/* Delta value colors */
 .trend-card-value.positive {
   color: var(--error-color);
 }
@@ -171,6 +217,12 @@
   display: inline-flex;
   align-items: center;
   width: auto;
+  transition: all 0.2s ease;
+}
+
+.actions-row .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* ===== CHART CONTAINER ===== */
@@ -246,11 +298,12 @@
   width: 100%;
   height: 100%;
   cursor: crosshair;
+  display: block;
 }
 
-/* ===== CHART TOOLTIP ===== */
+/* ===== CHART TOOLTIP (FIXED) ===== */
 .chart-tooltip {
-  position: absolute;
+  position: fixed;
   display: none;
   background: var(--panel-bg);
   border: 1px solid var(--border-color);
@@ -259,12 +312,14 @@
   font-size: 1.2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   pointer-events: none;
-  z-index: 100;
+  z-index: 10000;
   min-width: 150px;
+  transition: opacity 0.2s ease;
 }
 
 .dark-mode .chart-tooltip {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .chart-tooltip strong {
@@ -272,11 +327,28 @@
   font-size: 1.3rem;
   color: var(--text-primary);
   margin-bottom: 0.5rem;
+  font-weight: 600;
 }
 
 .chart-tooltip div {
   color: var(--text-secondary);
   margin: 0.3rem 0;
+  line-height: 1.4;
+}
+
+.tooltip-value-normal {
+  color: var(--success-color) !important;
+  font-weight: 600;
+}
+
+.tooltip-value-borderline {
+  color: var(--warning-color) !important;
+  font-weight: 600;
+}
+
+.tooltip-value-prolonged {
+  color: var(--error-color) !important;
+  font-weight: 600;
 }
 
 /* ===== RESPONSIVE DESIGN ===== */
@@ -309,7 +381,7 @@
 
 @media screen and (max-width: 600px) {
   .trend-card-value {
-    font-size: 2.5rem;
+    font-size: 2.8rem;
   }
 
   .chart-canvas-container {

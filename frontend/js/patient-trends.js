@@ -1,5 +1,6 @@
 // ===== PATIENT TRENDS - QTC MONITORING =====
-// Handles longitudinal QTc tracking and visualization
+// Handles longitudinal QTc tracking and visualization with smooth animations
+// NOW WITH LOCALSTORAGE PERSISTENCE
 
 // Keep last successful trend data for AI summary
 window._lastTrendPayload = null;
@@ -30,27 +31,69 @@ const trendNarrative = document.getElementById("trend-narrative");
 // Export buttons
 const exportCsvBtn = document.getElementById("export-csv");
 const printReportBtn = document.getElementById("print-report");
+const clearAllBtn = document.getElementById("clear-all-readings");
 
-// ===== HISTORICAL READINGS DATA =====
-const historicalReadings = [
-  { timestamp: "2025-09-01", QT_ms: 430, RR_ms: 1000 },
-  { timestamp: "2025-09-10", QT_ms: 440, RR_ms: 1000 },
-  { timestamp: "2025-09-20", QT_ms: 438, RR_ms: 1000 }
-];
+// ===== LOCALSTORAGE KEY =====
+const STORAGE_KEY = "cordea_historical_readings";
+
+// ===== HISTORICAL READINGS DATA (NOW PERSISTENT) =====
+let historicalReadings = [];
 
 // Keep reference to plotted points for tooltip
 let _plottedPoints = [];
+let _canvasRect = null;
+
+// ===== LOCALSTORAGE FUNCTIONS =====
+function saveHistoricalReadings() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(historicalReadings));
+    console.log("✅ Saved historical readings to localStorage:", historicalReadings);
+  } catch (err) {
+    console.error("❌ Failed to save to localStorage:", err);
+    showNotification("Failed to save data", "error");
+  }
+}
+
+function loadHistoricalReadings() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      historicalReadings = JSON.parse(stored);
+      console.log("✅ Loaded historical readings from localStorage:", historicalReadings);
+    } else {
+      // First time - initialize with demo data
+      historicalReadings = [
+        { timestamp: "2025-09-01", QT_ms: 430, RR_ms: 1000 },
+        { timestamp: "2025-09-10", QT_ms: 440, RR_ms: 1000 },
+        { timestamp: "2025-09-20", QT_ms: 438, RR_ms: 1000 }
+      ];
+      saveHistoricalReadings(); // Save demo data
+      console.log("✅ Initialized with demo data");
+    }
+  } catch (err) {
+    console.error("❌ Failed to load from localStorage:", err);
+    // Fallback to demo data
+    historicalReadings = [
+      { timestamp: "2025-09-01", QT_ms: 430, RR_ms: 1000 },
+      { timestamp: "2025-09-10", QT_ms: 440, RR_ms: 1000 },
+      { timestamp: "2025-09-20", QT_ms: 438, RR_ms: 1000 }
+    ];
+  }
+}
 
 // ===== INITIALIZE =====
 function initializeTrends() {
-  // Set default date to today
+  // Load data from localStorage
+  loadHistoricalReadings();
+
+  // Set today's date as default for new readings
   const today = new Date();
   const tzOffset = today.getTimezoneOffset() * 60000;
   trendDateInput.value = new Date(today.getTime() - tzOffset)
     .toISOString()
     .slice(0, 10);
 
-  // Render initial table
+  // Render the table with loaded data
   updateTrendTable();
 }
 
@@ -60,7 +103,17 @@ function updateTrendTable() {
 
   if (historicalReadings.length === 0) {
     const row = document.createElement("tr");
-    row.innerHTML = '<td colspan="4" class="empty-state">No historical readings yet. Add readings below.</td>';
+    row.innerHTML = `
+      <td colspan="4">
+        <div class="empty-state-container">
+          <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          <div class="empty-state-text">No historical readings yet</div>
+          <div class="empty-state-hint">Add your first ECG reading below to start tracking QTc over time</div>
+        </div>
+      </td>
+    `;
     trendTableBody.appendChild(row);
     return;
   }
@@ -101,7 +154,24 @@ function updateTrendTable() {
 function deleteReading(index) {
   if (confirm("Delete this reading?")) {
     historicalReadings.splice(index, 1);
+    saveHistoricalReadings(); // Persist to localStorage
     updateTrendTable();
+    showNotification("Reading deleted", "success");
+  }
+}
+
+// ===== CLEAR ALL READINGS =====
+function clearAllReadings() {
+  if (confirm("Delete all historical readings? This cannot be undone.")) {
+    historicalReadings.length = 0; // Clear array
+    saveHistoricalReadings(); // Save empty array to localStorage
+    updateTrendTable();
+
+    // Hide results
+    hide(trendSummary);
+    hide(chartContainer);
+
+    showNotification("All readings cleared", "info");
   }
 }
 
@@ -116,7 +186,6 @@ async function handleTrendSubmit(event) {
   const newQt = parseFloat(trendQtInput.value);
   const newRr = parseFloat(trendRrInput.value);
 
-  // Validation
   if (!newDate || !newQt || !newRr) {
     showMsg(trendError, "Please fill in all fields for the new reading.");
     return;
@@ -127,7 +196,6 @@ async function handleTrendSubmit(event) {
     return;
   }
 
-  // Build series (historical + new)
   const series = [
     ...historicalReadings,
     { timestamp: newDate, QT_ms: newQt, RR_ms: newRr }
@@ -136,7 +204,7 @@ async function handleTrendSubmit(event) {
   const payload = {
     age_band: ageBand,
     sex: sex,
-    series: series,
+    readings: series,
     qtc_method: "fridericia"
   };
 
@@ -144,29 +212,28 @@ async function handleTrendSubmit(event) {
     setBusy(trendSubmit, true);
     const result = await jsonPost("/trend/series", payload);
 
-    // Store for AI summary and CSV export
     window._lastTrendPayload = payload;
     window._lastTrendResult = result;
-    window._latestSeries = result.series || series;
+    window._latestSeries = result.series || [];
 
-    // Add new reading to historical data
+    // Add to historicalReadings and persist
     historicalReadings.push({ timestamp: newDate, QT_ms: newQt, RR_ms: newRr });
+    saveHistoricalReadings(); // Persist to localStorage
     updateTrendTable();
 
-    // Clear inputs
     trendQtInput.value = "";
     trendRrInput.value = "";
 
-    // Update next date
     const nextDate = new Date(newDate);
     nextDate.setDate(nextDate.getDate() + 7);
     trendDateInput.value = nextDate.toISOString().slice(0, 10);
 
-    // Render results
-    renderTrendResults(result);
+    renderTrendResults(result, ageBand, sex);
 
     const backendBanner = document.getElementById("backend-warning");
     if (backendBanner) backendBanner.style.display = "none";
+
+    showNotification("Reading added and saved", "success");
   } catch (err) {
     showMsg(trendError, extractErrorMessage(err));
   } finally {
@@ -174,30 +241,59 @@ async function handleTrendSubmit(event) {
   }
 }
 
-// ===== RESULT RENDERING =====
-function renderTrendResults(result) {
-  if (!result || !result.series) {
-    return;
+// ===== GENERATE NARRATIVE =====
+function generateNarrative(latest, deltaQtc, percentile, ageBand, sex) {
+  const qtc = latest.QTc_ms;
+
+  let narrative = `Current QTc (${qtc.toFixed(1)} ms`;
+
+  if (percentile && percentile !== "—") {
+    narrative += `, ${percentile}`;
   }
 
-  const series = result.series;
-  const latest = result.latest || series[series.length - 1];
-  const latestQtc = latest.QTc_ms;
-  const deltaQtc = result.delta_qtc || 0;
-  const percentile = result.percentile_band || "—";
-  const narrative = result.narrative || "Trend analysis complete.";
+  narrative += `) `;
 
-  // Show summary section
+  if (qtc >= 500) {
+    narrative += "is significantly prolonged. Urgent review recommended.";
+  } else if (qtc >= 470) {
+    narrative += "is at or near the upper reference limit. Consider repeat ECG after medication or electrolyte changes.";
+  } else if (qtc >= 450) {
+    narrative += "is borderline prolonged. Monitor for further increases.";
+  } else {
+    narrative += "is within normal limits for this demographic.";
+  }
+
+  if (Math.abs(deltaQtc) >= 10) {
+    narrative += ` QTc has ${deltaQtc > 0 ? 'increased' : 'decreased'} by ${Math.abs(deltaQtc).toFixed(1)} ms since the previous reading.`;
+  }
+
+  return narrative;
+}
+
+// ===== RESULT RENDERING =====
+function renderTrendResults(result, ageBand, sex) {
+  if (!result || !result.series) return;
+
+  const series = result.series;
+  const latest = series[series.length - 1];
+  const previous = series.length > 1 ? series[series.length - 2] : null;
+
+  const latestQtc = latest.QTc_ms;
+  const deltaQtc = previous ? (latestQtc - previous.QTc_ms) : 0;
+  const percentile = latest.percentile || "—";
+
+  const narrative = generateNarrative(latest, deltaQtc, percentile, ageBand, sex);
+
   show(trendSummary);
   show(chartContainer);
 
-  // Update summary cards
   if (latestQtcEl) {
     latestQtcEl.textContent = latestQtc ? latestQtc.toFixed(1) : "—";
   }
 
   if (deltaQtcEl) {
-    deltaQtcEl.textContent = deltaQtc > 0 ? `+${deltaQtc.toFixed(1)}` : deltaQtc.toFixed(1);
+    const deltaText = deltaQtc > 0 ? `↑ ${deltaQtc.toFixed(1)}` : deltaQtc < 0 ? `↓ ${Math.abs(deltaQtc).toFixed(1)}` : "0.0";
+    deltaQtcEl.textContent = deltaText;
     deltaQtcEl.className = "trend-card-value";
     if (deltaQtc > 0) deltaQtcEl.classList.add("positive");
     else if (deltaQtc < 0) deltaQtcEl.classList.add("negative");
@@ -216,82 +312,95 @@ function renderTrendResults(result) {
     trendNarrative.textContent = narrative;
   }
 
-  // Draw chart
-  drawTrendChart(series, result.age_band, result.sex);
+  drawTrendChart(series, result.bands);
 }
 
 // ===== CHART DRAWING =====
-function drawTrendChart(series, ageBand, sex) {
+function drawTrendChart(series, bands) {
   if (!trendCanvas || !series || series.length === 0) return;
 
   const ctx = trendCanvas.getContext("2d");
   const canvas = trendCanvas;
-
-  // Set canvas size to match container
   const container = canvas.parentElement;
-  canvas.width = container.clientWidth - 40; // Account for padding
-  canvas.height = container.clientHeight - 40;
 
-  const width = canvas.width;
-  const height = canvas.height;
+  // Store rect for tooltip
+  _canvasRect = container.getBoundingClientRect();
 
-  // Clear canvas
+  // Simple 1:1 canvas (no DPI scaling for now to avoid coordinate issues)
+  const containerWidth = Math.floor(_canvasRect.width) - 40;
+  const containerHeight = Math.floor(_canvasRect.height) - 40;
+
+  canvas.width = containerWidth;
+  canvas.height = containerHeight;
+  canvas.style.width = containerWidth + 'px';
+  canvas.style.height = containerHeight + 'px';
+
+  const width = containerWidth;
+  const height = containerHeight;
+
   ctx.clearRect(0, 0, width, height);
 
-  // Extract QTc values
   const qtcValues = series.map(r => r.QTc_ms).filter(v => defined(v));
   if (qtcValues.length === 0) return;
 
   const minQtc = Math.min(...qtcValues);
   const maxQtc = Math.max(...qtcValues);
   const rangeQtc = maxQtc - minQtc;
-  const padding = rangeQtc * 0.2; // 20% padding
+  const padding = Math.max(rangeQtc * 0.2, 20);
 
-  const yMin = Math.max(300, minQtc - padding);
-  const yMax = maxQtc + padding;
+  const yMin = Math.floor(Math.max(300, minQtc - padding) / 10) * 10;
+  const yMax = Math.ceil((maxQtc + padding) / 10) * 10;
   const yRange = yMax - yMin;
 
-  // Draw percentile bands (background)
-  drawPercentileBands(ctx, width, height, yMin, yMax);
-
-  // Draw grid lines
+  // Draw background zones
+  drawPercentileBands(ctx, width, height, yMin, yMax, bands);
   drawGridLines(ctx, width, height, yMin, yMax);
 
-  // Plot data points and line
+  // Calculate points
   _plottedPoints = [];
   const points = [];
 
   series.forEach((reading, index) => {
     if (!defined(reading.QTc_ms)) return;
 
-    const x = (index / (series.length - 1)) * (width - 60) + 30;
+    const x = (index / Math.max(series.length - 1, 1)) * (width - 60) + 30;
     const y = height - 30 - ((reading.QTc_ms - yMin) / yRange) * (height - 60);
 
-    points.push({ x, y });
+    points.push({
+      x, y,
+      category: reading.category,
+      timestamp: reading.timestamp,
+      qtc: reading.QTc_ms
+    });
+
     _plottedPoints.push({
       x, y,
       dateISO: reading.timestamp,
       qtc: reading.QTc_ms,
-      qt: reading.QT_ms,
-      rr: reading.RR_ms
+      category: reading.category
     });
   });
 
-  // Draw line connecting points
-  if (points.length > 1) {
-    ctx.strokeStyle = "#3b82f6";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(points[0].x, points[0].y);
-    for (let i = 1; i < points.length; i++) {
-      ctx.lineTo(points[i].x, points[i].y);
-    }
-    ctx.stroke();
+  // Draw line
+  ctx.strokeStyle = "#3b82f6";
+  ctx.lineWidth = 3;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, points[0].y);
+  for (let i = 1; i < points.length; i++) {
+    ctx.lineTo(points[i].x, points[i].y);
   }
+  ctx.stroke();
 
-  // Draw data points
+  // Draw points
   points.forEach((point, index) => {
-    ctx.fillStyle = "#3b82f6";
+    let fillColor = "#3b82f6";
+    if (point.category === "normal") fillColor = "#22c55e";
+    else if (point.category === "borderline_prolonged") fillColor = "#f59e0b";
+    else if (point.category === "prolonged" || point.category === "high_risk") fillColor = "#ef4444";
+
+    ctx.fillStyle = fillColor;
     ctx.beginPath();
     ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
     ctx.fill();
@@ -299,49 +408,46 @@ function drawTrendChart(series, ageBand, sex) {
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Highlight latest point
+    // Highlight latest
     if (index === points.length - 1) {
       ctx.strokeStyle = "#ef4444";
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.arc(point.x, point.y, 8, 0, Math.PI * 2);
+      ctx.arc(point.x, point.y, 7, 0, Math.PI * 2);
       ctx.stroke();
     }
   });
 
-  // Draw Y-axis labels
+  // Draw labels
   drawYAxisLabels(ctx, height, yMin, yMax);
+  drawXAxisLabels(ctx, width, height, series);
 }
 
-function drawPercentileBands(ctx, width, height, yMin, yMax) {
-  // Approximate percentile thresholds (these should come from backend ideally)
-  // For now, using rough estimates
-  const p50 = yMin + (yMax - yMin) * 0.5;
-  const p90 = yMin + (yMax - yMin) * 0.8;
+function drawPercentileBands(ctx, width, height, yMin, yMax, bands) {
+  let p50 = yMin + (yMax - yMin) * 0.5;
+  let p90 = yMin + (yMax - yMin) * 0.8;
 
-  // Normal band (bottom to 50th)
+  if (bands && bands.p50 && bands.p50[0]) p50 = bands.p50[0].y;
+  if (bands && bands.p90 && bands.p90[0]) p90 = bands.p90[0].y;
+
   ctx.fillStyle = "rgba(34, 197, 94, 0.1)";
   const normalHeight = ((p50 - yMin) / (yMax - yMin)) * (height - 60);
   ctx.fillRect(0, height - 30 - normalHeight, width, normalHeight);
 
-  // Borderline band (50th to 90th)
   ctx.fillStyle = "rgba(245, 158, 11, 0.1)";
   const borderlineHeight = ((p90 - p50) / (yMax - yMin)) * (height - 60);
   ctx.fillRect(0, height - 30 - normalHeight - borderlineHeight, width, borderlineHeight);
 
-  // High band (90th and above)
   ctx.fillStyle = "rgba(239, 68, 68, 0.1)";
   const highHeight = ((yMax - p90) / (yMax - yMin)) * (height - 60);
   ctx.fillRect(0, 30, width, highHeight);
 }
 
 function drawGridLines(ctx, width, height, yMin, yMax) {
-  ctx.strokeStyle = "rgba(0, 0, 0, 0.1)";
+  ctx.strokeStyle = "rgba(0, 0, 0, 0.05)";
   ctx.lineWidth = 1;
 
   const steps = 5;
-  const stepSize = (yMax - yMin) / steps;
-
   for (let i = 0; i <= steps; i++) {
     const y = height - 30 - (i / steps) * (height - 60);
     ctx.beginPath();
@@ -352,24 +458,41 @@ function drawGridLines(ctx, width, height, yMin, yMax) {
 }
 
 function drawYAxisLabels(ctx, height, yMin, yMax) {
-  ctx.fillStyle = "#475569";
+  const isDark = document.body.classList.contains('dark-mode');
+  ctx.fillStyle = isDark ? "#e2e8f0" : "#475569";
   ctx.font = "12px 'Open Sans', sans-serif";
   ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
 
   const steps = 5;
   for (let i = 0; i <= steps; i++) {
     const value = yMin + (i / steps) * (yMax - yMin);
     const y = height - 30 - (i / steps) * (height - 60);
-    ctx.fillText(Math.round(value) + " ms", 25, y + 4);
+    ctx.fillText(Math.round(value), 25, y);
   }
 }
 
-// ===== CHART TOOLTIP =====
+function drawXAxisLabels(ctx, width, height, series) {
+  const isDark = document.body.classList.contains('dark-mode');
+  ctx.fillStyle = isDark ? "#e2e8f0" : "#475569";
+  ctx.font = "11px 'Open Sans', sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+
+  series.forEach((reading, index) => {
+    const x = (index / Math.max(series.length - 1, 1)) * (width - 60) + 30;
+    const dateLabel = formatShortDate(reading.timestamp);
+    ctx.fillText(dateLabel, x, height - 20);
+  });
+}
+
+// ===== TOOLTIP =====
 if (trendCanvas && chartTooltip) {
   trendCanvas.addEventListener("mousemove", (e) => {
-    const rect = trendCanvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
+    if (!_canvasRect) return;
+
+    const mx = e.clientX - _canvasRect.left - 20;
+    const my = e.clientY - _canvasRect.top - 20;
 
     let best = null;
     let bestDist = 9999;
@@ -378,7 +501,7 @@ if (trendCanvas && chartTooltip) {
       const dx = mx - pt.x;
       const dy = my - pt.y;
       const d2 = dx * dx + dy * dy;
-      if (d2 < bestDist && d2 < 100) {
+      if (d2 < bestDist && d2 < 400) {
         best = pt;
         bestDist = d2;
       }
@@ -386,13 +509,16 @@ if (trendCanvas && chartTooltip) {
 
     if (best) {
       chartTooltip.style.display = "block";
-      chartTooltip.style.left = `${best.x + rect.left}px`;
-      chartTooltip.style.top = `${best.y + rect.top - 80}px`;
+      chartTooltip.style.left = `${e.clientX + 15}px`;
+      chartTooltip.style.top = `${e.clientY - 60}px`;
+
+      let valueClass = "tooltip-value-normal";
+      if (best.category === "borderline_prolonged") valueClass = "tooltip-value-borderline";
+      else if (best.category === "prolonged" || best.category === "high_risk") valueClass = "tooltip-value-prolonged";
+
       chartTooltip.innerHTML = `
         <strong>${formatShortDate(best.dateISO)}</strong>
-        <div>QTc: ${best.qtc?.toFixed ? best.qtc.toFixed(1) : best.qtc} ms</div>
-        <div>QT: ${defined(best.qt) ? best.qt : "—"} ms</div>
-        <div>RR: ${defined(best.rr) ? best.rr : "—"} ms</div>
+        <div class="${valueClass}">QTc: ${best.qtc.toFixed(1)} ms</div>
       `;
     } else {
       chartTooltip.style.display = "none";
@@ -408,26 +534,30 @@ if (trendCanvas && chartTooltip) {
 if (exportCsvBtn) {
   exportCsvBtn.addEventListener("click", () => {
     const rows = [["Date", "QT_ms", "RR_ms", "QTc_ms"]];
-
     (window._latestSeries || []).forEach(r => {
       rows.push([
         r.timestamp || "",
         defined(r.QT_ms) ? r.QT_ms : "",
         defined(r.RR_ms) ? r.RR_ms : "",
-        defined(r.QTc_ms) ? (r.QTc_ms.toFixed ? r.QTc_ms.toFixed(1) : r.QTc_ms) : ""
+        defined(r.QTc_ms) ? r.QTc_ms.toFixed(1) : ""
       ]);
     });
-
     const csv = rows.map(r => r.join(",")).join("\n");
     downloadCSV(csv, "qtc_trend_series.csv");
+    showNotification("CSV exported", "success");
   });
 }
 
-// ===== PRINT REPORT =====
+// ===== PRINT =====
 if (printReportBtn) {
   printReportBtn.addEventListener("click", () => {
     window.print();
   });
+}
+
+// ===== CLEAR ALL BUTTON =====
+if (clearAllBtn) {
+  clearAllBtn.addEventListener("click", clearAllReadings);
 }
 
 // ===== EVENT LISTENERS =====

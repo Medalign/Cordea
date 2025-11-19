@@ -76,14 +76,52 @@
   outline-offset: 2px;
 }
 
-/* ===== HERO ASSESSMENT CARD ===== */
+/* ===== ENHANCED HERO ASSESSMENT CARD ===== */
 .hero-card {
-  background: linear-gradient(135deg, var(--panel-bg) 0%, var(--panel-hover-bg) 100%);
   border: 2px solid var(--border-color);
   border-radius: 12px;
   padding: 3rem;
   margin-bottom: 2.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+/* Default gradient (will be overridden by JS) */
+.hero-card {
+  background: linear-gradient(135deg, var(--panel-bg) 0%, var(--panel-hover-bg) 100%);
+}
+
+/* Risk-based gradient classes (applied by JS) */
+.hero-card.risk-normal {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.03) 0%, rgba(34, 197, 94, 0.08) 100%);
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+.hero-card.risk-borderline {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.03) 0%, rgba(245, 158, 11, 0.08) 100%);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.hero-card.risk-prolonged {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.03) 0%, rgba(239, 68, 68, 0.08) 100%);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.hero-card.risk-high {
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.08) 0%, rgba(220, 38, 38, 0.15) 100%);
+  border-color: rgba(220, 38, 38, 0.3);
+  animation: subtle-glow 2s ease-in-out infinite;
+}
+
+@keyframes subtle-glow {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05), 0 0 0 0 rgba(220, 38, 38, 0);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(220, 38, 38, 0.15), 0 0 20px rgba(220, 38, 38, 0.1);
+  }
 }
 
 .dark-mode .hero-card {
@@ -101,22 +139,29 @@
 .qtc-display {
   display: flex;
   align-items: baseline;
-  gap: 0.8rem;
+  gap: 1rem;
 }
 
+/* ENHANCED: Larger QTc value */
 .qtc-value {
-  font-size: 6rem;
+  font-size: 8rem;
   font-weight: 700;
   line-height: 1;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
+  transition: transform 0.3s ease;
+}
+
+/* Subtle scale on hover */
+.hero-card:hover .qtc-value {
+  transform: scale(1.02);
 }
 
 .qtc-unit {
-  font-size: 2rem;
+  font-size: 2.4rem;
   font-weight: 600;
   color: var(--text-secondary);
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .assessment-section {
@@ -178,6 +223,21 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  animation: marker-appear 0.6s ease-out;
+}
+
+@keyframes marker-appear {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  60% {
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
 }
 
 .gauge-marker-dot {
@@ -241,7 +301,8 @@
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 1.5rem;
-  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  position: relative;
 }
 
 .param-card:hover {
@@ -261,6 +322,31 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Tooltip icon */
+.param-name .tooltip-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  background: var(--input-bg);
+  border-radius: 50%;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: help;
+  transition: all 0.2s ease;
+}
+
+.param-name .tooltip-trigger:hover {
+  background: var(--accent-primary);
+  color: white;
+  transform: scale(1.1);
 }
 
 .param-value {
@@ -277,6 +363,22 @@
   padding: 0.3rem 0.8rem;
 }
 
+/* ENHANCED: Pulse animation for danger badges */
+.param-badge.pulse-danger {
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
+@keyframes badge-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+  }
+}
+
 .rationale-toggle {
   margin-top: 1rem;
   background: transparent;
@@ -287,6 +389,7 @@
   text-decoration: underline;
   padding: 0;
   font-weight: 500;
+  transition: color 0.2s ease;
 }
 
 .rationale-toggle:hover {
@@ -302,6 +405,22 @@
   font-size: 1.3rem;
   line-height: 1.5;
   color: var(--text-secondary);
+  animation: slide-down 0.3s ease-out;
+}
+
+@keyframes slide-down {
+  0% {
+    opacity: 0;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  100% {
+    opacity: 1;
+    max-height: 200px;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
 }
 
 /* ===== RECOMMENDATIONS SECTION ===== */
@@ -358,6 +477,48 @@
   font-weight: 600;
 }
 
+/* ===== TOOLTIP SYSTEM ===== */
+.tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  background: var(--text-primary);
+  color: white;
+  padding: 0.8rem 1.2rem;
+  border-radius: 6px;
+  font-size: 1.2rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  max-width: 250px;
+  white-space: normal;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--text-primary);
+}
+
+.tooltip-trigger:hover .tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-12px);
+}
+
+/* Position tooltips correctly */
+.param-name {
+  position: relative;
+}
+
 /* ===== RESPONSIVE DESIGN ===== */
 @media screen and (max-width: 900px) {
   .hero-inner {
@@ -368,6 +529,10 @@
 
   .qtc-display {
     justify-content: center;
+  }
+
+  .qtc-value {
+    font-size: 6rem;
   }
 
   .assessment-section {
@@ -385,14 +550,19 @@
   }
 
   .qtc-value {
-    font-size: 4.5rem;
+    font-size: 5rem;
   }
 
   .qtc-unit {
-    font-size: 1.6rem;
+    font-size: 1.8rem;
   }
 
   .parameters-grid {
     grid-template-columns: 1fr;
+  }
+
+  .tooltip {
+    max-width: 200px;
+    font-size: 1.1rem;
   }
 }
