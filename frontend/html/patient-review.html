@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cordea — Patient Review</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/patient-review.css">
+</head>
+<body>
+  <div class="dash">
+    <!-- Header -->
+    <header class="header">
+      <div class="header__logo">
+        <h1 class="header__logo-text">Cordea</h1>
+      </div>
+
+      <div id="digital-clock" class="digital-clock">00:00:00</div>
+
+      <div class="header__options">
+        <div class="api-status">
+          <span id="health-chip" class="status-badge">Checking...</span>
+          <button id="health-retry" class="btn btn-secondary btn-small">Retry</button>
+        </div>
+
+        <button id="theme-toggle" class="theme-toggle">🌙 Dark</button>
+      </div>
+    </header>
+
+    <div class="body">
+      <!-- Sidebar -->
+      <aside id="sidebar" class="sidebar">
+        <button id="sidebar-toggle" class="sidebar__toggle" aria-label="Toggle sidebar">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+
+        <nav class="sidebar__nav">
+          <ul style="list-style: none; padding: 0; margin: 0;">
+            <li class="sidebar__item">
+              <a href="patient-review.html" class="sidebar__link sidebar__link--active">
+                <svg class="sidebar__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span class="sidebar__text">Patient Review</span>
+              </a>
+            </li>
+            <li class="sidebar__item">
+              <a href="patient-trends.html" class="sidebar__link">
+                <svg class="sidebar__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <span class="sidebar__text">Patient Trends</span>
+              </a>
+            </li>
+            <li class="sidebar__item">
+              <a href="ai-summary.html" class="sidebar__link">
+                <svg class="sidebar__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <span class="sidebar__text">AI Summary</span>
+              </a>
+            </li>
+            <li class="sidebar__item">
+              <a href="waveform.html" class="sidebar__link">
+                <svg class="sidebar__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                </svg>
+                <span class="sidebar__text">Waveform Viewer</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main">
+        <h1 class="main__heading">Patient Review — Encounter Summary</h1>
+        <p class="main__desc">Evaluate ECG intervals with age and sex-specific QTc percentile assessment</p>
+
+        <!-- Input Form Card -->
+        <div class="action-card">
+          <div class="action-header">
+            <span>ECG Interval Entry</span>
+            <div class="section-actions">
+              <button id="guardrail-demo-adult" class="btn btn-secondary btn-small">Load Adult Demo</button>
+              <button id="guardrail-demo-paeds" class="btn btn-secondary btn-small">Load Paediatric Demo</button>
+            </div>
+          </div>
+
+          <form id="guardrail-form" class="grid grid--two">
+            <div class="form-group">
+              <label class="form-label" for="age_band_select">Age band</label>
+              <select name="age_band" id="age_band_select" class="form-select">
+                <option>18–39 years</option>
+                <option>40–64 years</option>
+                <option selected>65+ years</option>
+                <option>6–12 years</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="sex_select">Sex</label>
+              <select name="sex" id="sex_select" class="form-select">
+                <option value="male" selected>Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="heart_rate_input">
+                Heart rate (bpm) <span class="helper">55–100</span>
+              </label>
+              <input
+                name="heart_rate"
+                id="heart_rate_input"
+                class="form-input"
+                type="number"
+                inputmode="numeric"
+                placeholder="e.g. 72"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="pr_ms_input">
+                PR interval (ms) <span class="helper">120–210</span>
+              </label>
+              <input
+                name="PR_ms"
+                id="pr_ms_input"
+                class="form-input"
+                type="number"
+                inputmode="numeric"
+                placeholder="e.g. 160"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="qrs_ms_input">
+                QRS duration (ms) <span class="helper">60–115</span>
+              </label>
+              <input
+                name="QRS_ms"
+                id="qrs_ms_input"
+                class="form-input"
+                type="number"
+                inputmode="numeric"
+                placeholder="e.g. 92"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="qt_ms_input">
+                QT interval (ms) <span class="helper">350–450</span>
+              </label>
+              <input
+                name="QT_ms"
+                id="qt_ms_input"
+                class="form-input"
+                type="number"
+                inputmode="numeric"
+                placeholder="e.g. 380"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="rr_ms_input">
+                RR interval (ms) <span class="helper">600–1200</span>
+              </label>
+              <input
+                name="RR_ms"
+                id="rr_ms_input"
+                class="form-input"
+                type="number"
+                inputmode="numeric"
+                placeholder="e.g. 829"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">QTc method</label>
+              <div class="toggle-switch">
+                <input type="radio" name="qtc_method" id="qtc-bazett" value="bazett" />
+                <input type="radio" name="qtc_method" id="qtc-fridericia" value="fridericia" checked />
+                <label for="qtc-bazett" class="toggle-option">Bazett</label>
+                <label for="qtc-fridericia" class="toggle-option">Fridericia</label>
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+
+            <div class="grid-row-end">
+              <button id="guardrail-submit" class="btn btn-primary" type="submit">
+                Evaluate Encounter
+              </button>
+            </div>
+          </form>
+
+          <p id="guardrail-error" class="status-error-badge hide"></p>
+        </div>
+
+        <!-- Results Container -->
+        <div id="guardrail-result"></div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Backend Warning Banner -->
+  <div id="backend-warning">
+    ⚠️ FastAPI backend required at http://127.0.0.1:8000
+  </div>
+
+  <!-- Scripts -->
+  <script src="../js/scripts.js"></script>
+  <script src="../js/patient-review.js"></script>
+</body>
+</html>

@@ -1,0 +1,416 @@
+/* ===== PATIENT TRENDS SPECIFIC STYLES ===== */
+/* QTc monitoring and longitudinal trend visualization */
+
+/* ===== HISTORICAL TABLE SECTION ===== */
+.history-section {
+  grid-column: 1 / -1;
+  margin-top: 1rem;
+}
+
+.section-subtitle {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.table-container {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--panel-bg);
+}
+
+.history-table thead {
+  background: var(--input-bg);
+}
+
+.history-table th {
+  padding: 1.2rem 1.5rem;
+  text-align: left;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.history-table td {
+  padding: 1.2rem 1.5rem;
+  font-size: 1.4rem;
+  color: var(--text-primary);
+  border-top: 1px solid var(--border-color);
+}
+
+.history-table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.history-table tbody tr:hover {
+  background: var(--panel-hover-bg);
+}
+
+.history-table .delete-btn {
+  background: transparent;
+  border: none;
+  color: var(--error-color);
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 4px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.history-table .delete-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  transform: scale(1.1);
+}
+
+.history-table .empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-secondary);
+}
+
+.empty-state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  gap: 1.5rem;
+}
+
+.empty-state-icon {
+  width: 8rem;
+  height: 8rem;
+  color: var(--text-secondary);
+  opacity: 0.3;
+}
+
+.empty-state-text {
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 400px;
+}
+
+.empty-state-hint {
+  font-size: 1.3rem;
+  color: var(--text-secondary);
+  opacity: 0.7;
+  text-align: center;
+}
+
+/* ===== TREND SUMMARY CARDS ===== */
+#trend-summary {
+  margin-top: 2.5rem;
+  animation: fade-in 0.4s ease-out;
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.trend-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.trend-card {
+  background: linear-gradient(135deg, var(--panel-bg) 0%, var(--panel-hover-bg) 100%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.trend-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.dark-mode .trend-card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+}
+
+.trend-card-label {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 1rem;
+}
+
+.trend-card-value {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 0.5rem;
+}
+
+.trend-card-unit {
+  font-size: 1.4rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.trend-card-badge {
+  display: inline-block;
+  margin-top: 0.5rem;
+}
+
+.trend-card-value.positive {
+  color: var(--error-color);
+}
+
+.trend-card-value.negative {
+  color: var(--success-color);
+}
+
+.trend-card-value.neutral {
+  color: var(--text-secondary);
+}
+
+/* ===== NARRATIVE CARD ===== */
+.trend-narrative-card {
+  background: var(--panel-hover-bg);
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.narrative-text {
+  font-size: 1.5rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* ===== ACTIONS ROW ===== */
+.actions-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.actions-row .btn {
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  transition: all 0.2s ease;
+}
+
+.actions-row .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* ===== CHART CONTAINER ===== */
+#chart-container {
+  margin-top: 2.5rem;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.chart-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+}
+
+.legend-swatch {
+  width: 2rem;
+  height: 1.2rem;
+  border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.legend-swatch--normal {
+  background: rgba(34, 197, 94, 0.3);
+}
+
+.legend-swatch--borderline {
+  background: rgba(245, 158, 11, 0.3);
+}
+
+.legend-swatch--high {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+/* ===== CHART CANVAS ===== */
+.chart-canvas-container {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  background: var(--input-bg);
+  border-radius: 8px;
+  padding: 2rem;
+}
+
+#trend-canvas {
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  display: block;
+}
+
+/* ===== CHART TOOLTIP (FIXED) ===== */
+.chart-tooltip {
+  position: fixed;
+  display: none;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 1rem 1.2rem;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  z-index: 10000;
+  min-width: 150px;
+  transition: opacity 0.2s ease;
+}
+
+.dark-mode .chart-tooltip {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.chart-tooltip strong {
+  display: block;
+  font-size: 1.3rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.chart-tooltip div {
+  color: var(--text-secondary);
+  margin: 0.3rem 0;
+  line-height: 1.4;
+}
+
+.tooltip-value-normal {
+  color: var(--success-color) !important;
+  font-weight: 600;
+}
+
+.tooltip-value-borderline {
+  color: var(--warning-color) !important;
+  font-weight: 600;
+}
+
+.tooltip-value-prolonged {
+  color: var(--error-color) !important;
+  font-weight: 600;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media screen and (max-width: 900px) {
+  .trend-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .chart-legend {
+    width: 100%;
+  }
+
+  .chart-canvas-container {
+    height: 300px;
+  }
+
+  .actions-row {
+    flex-direction: column;
+  }
+
+  .actions-row .btn {
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .trend-card-value {
+    font-size: 2.8rem;
+  }
+
+  .chart-canvas-container {
+    height: 250px;
+    padding: 1rem;
+  }
+
+  .chart-legend {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  .header, .sidebar, .actions-row, #backend-warning {
+    display: none !important;
+  }
+
+  .main {
+    padding: 0;
+  }
+
+  .chart-canvas-container {
+    break-inside: avoid;
+  }
+
+  .trend-cards {
+    break-inside: avoid;
+  }
+}

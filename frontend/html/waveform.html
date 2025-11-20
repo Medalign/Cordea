@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cordea — Waveform Viewer</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/waveform.css">
+</head>
+<body>
+  <div class="dash">
+    <!-- Header -->
+    <header class="header">
+      <div class="header__logo">
+        <h1 class="header__logo-text">Cordea</h1>
+      </div>
+
+      <div id="digital-clock" class="digital-clock">00:00:00</div>
+
+      <div class="header__options">
+        <div class="api-status">
+          <span id="health-chip" class="status-badge status-badge--green">Local Tools</span>
+        </div>
+
+        <button id="theme-toggle" class="theme-toggle">🌙 Dark</button>
+      </div>
+    </header>
+
+    <div class="body">
+      <!-- Sidebar -->
+      <aside id="sidebar" class="sidebar">
+        <button id="sidebar-toggle" class="sidebar__toggle" aria-label="Toggle sidebar">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+
+        <nav class="sidebar__nav">
+          <ul style="list-style: none; padding: 0; margin: 0;">
+            <li class="sidebar__item">
+              <a href="patient-review.html" class="sidebar__link">
+                <svg class="sidebar__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span class="sidebar__text">Patient Review</span>
+              </a>
+            </li>
+            <li class="sidebar__item">
+              <a href="patient-trends.html" class="sidebar__link">
+                <svg class="sidebar__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <span class="sidebar__text">Patient Trends</span>
+              </a>
+            </li>
+            <li class="sidebar__item">
+              <a href="ai-summary.html" class="sidebar__link">
+                <svg class="sidebar__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <span class="sidebar__text">AI Summary</span>
+              </a>
+            </li>
+            <li class="sidebar__item">
+              <a href="waveform.html" class="sidebar__link sidebar__link--active">
+                <svg class="sidebar__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                </svg>
+                <span class="sidebar__text">Waveform Viewer</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main">
+        <h1 class="main__heading">Waveform QT/QTc Viewer</h1>
+        <p class="main__desc">Upload an ECG image and mark intervals to calculate QT, RR, and QTc measurements</p>
+
+        <!-- Waveform Marking Section -->
+        <div class="action-card">
+          <div class="action-header">
+            <span>Mark Intervals on Waveform</span>
+            <div class="upload-btn-wrapper">
+              <label for="waveform-file" class="upload-btn">
+                <svg class="upload-btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <span id="upload-btn-text">Upload ECG Image</span>
+                <input type="file" id="waveform-file" accept="image/png,image/jpeg" class="upload-input" />
+              </label>
+              <button id="clear-upload-btn" class="clear-upload-btn hide" title="Remove uploaded image">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <p id="waveform-error" class="status-error-badge hide"></p>
+
+          <div class="waveform-layout">
+            <!-- Controls Column -->
+            <div class="waveform-controls">
+              <!-- Calibration -->
+              <div class="control-section">
+                <h3 class="control-title">Calibration</h3>
+                <div class="form-group">
+                  <label class="form-label" for="ms-per-pixel">
+                    Horizontal calibration (ms per pixel)
+                  </label>
+                  <input
+                    id="ms-per-pixel"
+                    class="form-input"
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    value="6.00"
+                  />
+                  <p class="help-text">
+                    Fixed approximation for demo. Production would use ECG grid calibration (25 mm/s = 40 ms/mm).
+                  </p>
+                </div>
+              </div>
+
+              <!-- Mark Buttons -->
+              <div class="control-section">
+                <h3 class="control-title">Mark Mode</h3>
+                <div class="mark-buttons">
+                  <button id="btn-mark-q" class="btn btn-secondary btn-small mark-btn">
+                    <span class="mark-dot mark-dot--q"></span>
+                    Mark Q Start
+                  </button>
+                  <button id="btn-mark-t" class="btn btn-secondary btn-small mark-btn">
+                    <span class="mark-dot mark-dot--t"></span>
+                    Mark T End
+                  </button>
+                  <button id="btn-mark-r1" class="btn btn-secondary btn-small mark-btn">
+                    <span class="mark-dot mark-dot--r1"></span>
+                    Mark R1
+                  </button>
+                  <button id="btn-mark-r2" class="btn btn-secondary btn-small mark-btn">
+                    <span class="mark-dot mark-dot--r2"></span>
+                    Mark R2
+                  </button>
+                </div>
+                <button id="btn-clear-marks" class="btn btn-error btn-small" type="button">
+                  Clear All Marks
+                </button>
+              </div>
+
+              <!-- Current Mode Display -->
+              <div class="control-section">
+                <h3 class="control-title">Current Mode</h3>
+                <div class="mode-display">
+                  <p id="mark-mode-label" class="mode-text">
+                    No active mark. Choose a marker, then click on the waveform.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Event Log -->
+              <div class="control-section">
+                <h3 class="control-title">Event Log</h3>
+                <pre id="waveform-log" class="event-log" aria-live="polite"></pre>
+              </div>
+            </div>
+
+            <!-- Canvas Column -->
+            <div class="waveform-canvas-column">
+              <div class="canvas-controls">
+                <div class="zoom-controls">
+                  <button id="zoom-in" class="zoom-btn" title="Zoom In">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+                    </svg>
+                  </button>
+                  <button id="zoom-out" class="zoom-btn" title="Zoom Out">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
+                    </svg>
+                  </button>
+                  <button id="zoom-reset" class="zoom-btn" title="Reset Zoom">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </button>
+                  <span id="zoom-level" class="zoom-level">100%</span>
+                  <div class="zoom-divider"></div>
+                  <button id="btn-grab-mode" class="zoom-btn grab-btn" title="Toggle pan mode to move around the image">
+                    <svg class="grab-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+                    </svg>
+                  </button>
+                </div>
+                <div class="canvas-hint-inline">
+                  <strong>Zoom:</strong> Mouse wheel or trackpad • <strong>Pan:</strong> Grab mode or click & drag
+                </div>
+              </div>
+              <div class="canvas-wrapper">
+                <canvas
+                  id="ecg-canvas"
+                  width="1200"
+                  height="400"
+                  aria-label="ECG waveform canvas"
+                ></canvas>
+              </div>
+              <p class="canvas-hint">
+                After selecting a mark mode, click on the waveform to place the marker.
+                <strong>Q/T marks</strong> compute QT interval; <strong>R1/R2 marks</strong> compute RR interval.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="action-card">
+          <div class="action-header">
+            <span>Derived Intervals and QTc</span>
+          </div>
+
+          <div class="results-grid">
+            <div class="result-card">
+              <div class="result-label">QT Interval</div>
+              <div class="result-value" id="qt-ms">—</div>
+              <div class="result-unit">ms</div>
+            </div>
+
+            <div class="result-card">
+              <div class="result-label">RR Interval</div>
+              <div class="result-value" id="rr-ms">—</div>
+              <div class="result-unit">ms</div>
+            </div>
+
+            <div class="result-card">
+              <div class="result-label">QTc (Fridericia)</div>
+              <div class="result-value" id="qtc-ms">—</div>
+              <div class="result-unit">ms</div>
+            </div>
+
+            <div class="result-card result-card--full">
+              <div class="result-label">Classification</div>
+              <div class="result-classification" id="qtc-class">—</div>
+            </div>
+          </div>
+
+          <div class="calculation-note">
+            <svg class="note-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div class="note-content">
+              <p class="note-text">
+                <strong>Calculation Method:</strong> QT and RR are derived from on-screen pixel distances
+                using the configured calibration. QTc is calculated using the Fridericia formula:
+                <code>QTc = QT / RR<sup>1/3</sup></code>
+              </p>
+              <p class="note-text">
+                This is a <strong>demonstration-only</strong> feature and does not provide diagnostic decisions.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer-card">
+          <p class="disclaimer-text">
+            <strong>DEMONSTRATION ONLY — UPLOADED DATA — NOT FOR CLINICAL USE.</strong>
+            Measurements shown here are for teaching, documentation, and demo purposes only.
+          </p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../js/scripts.js"></script>
+  <script src="../js/waveform.js"></script>
+</body>
+</html>
