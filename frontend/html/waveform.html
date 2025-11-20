@@ -169,6 +169,35 @@
 
             <!-- Canvas Column -->
             <div class="waveform-canvas-column">
+              <div class="canvas-controls">
+                <div class="zoom-controls">
+                  <button id="zoom-in" class="zoom-btn" title="Zoom In">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+                    </svg>
+                  </button>
+                  <button id="zoom-out" class="zoom-btn" title="Zoom Out">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
+                    </svg>
+                  </button>
+                  <button id="zoom-reset" class="zoom-btn" title="Reset Zoom">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </button>
+                  <span id="zoom-level" class="zoom-level">100%</span>
+                  <div class="zoom-divider"></div>
+                  <button id="btn-grab-mode" class="zoom-btn grab-btn" title="Toggle pan mode to move around the image">
+                    <svg class="grab-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+                    </svg>
+                  </button>
+                </div>
+                <div class="canvas-hint-inline">
+                  <strong>Zoom:</strong> Mouse wheel or trackpad • <strong>Pan:</strong> Grab mode or click & drag
+                </div>
+              </div>
               <div class="canvas-wrapper">
                 <canvas
                   id="ecg-canvas"
