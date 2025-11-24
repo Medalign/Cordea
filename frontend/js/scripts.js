@@ -16,7 +16,7 @@ if (apiOverride) {
   }
 }
 
-console.log('🔗 Using API base:', API_BASE);
+console.log('ðŸ”— Using API base:', API_BASE);
 
 // ===== CORDEA API HELPER FUNCTIONS =====
 
@@ -42,7 +42,7 @@ async function jsonPost(endpoint, body) {
   const url = `${normaliseBase(API_BASE)}${endpoint}`;
 
   try {
-    console.log(`📡 POST: ${url}`);
+    console.log(`ðŸ“¡ POST: ${url}`);
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -59,10 +59,10 @@ async function jsonPost(endpoint, body) {
     }
 
     const data = await response.json();
-    console.log(`✅ Response:`, data);
+    console.log(`âœ… Response:`, data);
     return data;
   } catch (error) {
-    console.error(`❌ API Error:`, error);
+    console.error(`âŒ API Error:`, error);
     throw error;
   }
 }
@@ -129,10 +129,10 @@ function mapAgeBandToEnum(label) {
 
 function labelFromEnum(enumVal) {
   const t = (enumVal || "").toLowerCase();
-  if (t === "adult_18_39") return "18–39 years";
-  if (t === "adult_40_64") return "40–64 years";
+  if (t === "adult_18_39") return "18â€“39 years";
+  if (t === "adult_40_64") return "40â€“64 years";
   if (t === "adult_65_plus") return "65+ years";
-  if (t === "child_6_12") return "6–12 years";
+  if (t === "child_6_12") return "6â€“12 years";
   return enumVal;
 }
 
@@ -386,7 +386,7 @@ function formatDate(date, format = 'short') {
 // ===== SHARED INITIALIZATION =====
 
 document.addEventListener('DOMContentLoaded', async () => {
-  console.log('🚀 Initializing Cordea Shared Components...');
+  console.log('ðŸš€ Initializing Cordea Shared Components...');
 
   try {
     // Load saved theme
@@ -490,10 +490,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
 
-    console.log('✅ Shared components initialized successfully');
+    console.log('âœ… Shared components initialized successfully');
 
   } catch (error) {
-    console.error('❌ Failed to initialize shared components:', error);
+    console.error(' Failed to initialize shared components:', error);
     showNotification('Failed to initialize application', 'error');
   }
 });

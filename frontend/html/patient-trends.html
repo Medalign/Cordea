@@ -76,7 +76,7 @@
 
       <!-- Main Content -->
       <main class="main">
-        <h1 class="main__heading">Patient Trends — QTc Monitoring</h1>
+        <h1 class="main__heading">Patient Trends - QTc Monitoring</h1>
         <p class="main__desc">Track QTc changes over time to detect medication-related prolongation and drift into risk zones</p>
 
         <!-- Input Form Card -->
@@ -88,11 +88,15 @@
           <form id="trend-form" class="grid grid--two">
             <div class="form-group">
               <label class="form-label" for="trend-age-band">Age band</label>
-              <select id="trend-age-band" class="form-select">
-                <option>18–39 years</option>
-                <option>40–64 years</option>
-                <option selected>65+ years</option>
-                <option>6–12 years</option>
+                            <select id="trend-age-band" class="form-select">
+                <option value="neonate_0_7">Neonate (0–7 days)</option>
+                <option value="infant_1wk_1yr">Infant (1 wk – 1 yr)</option>
+                <option value="toddler_1_3">Toddler (1–3 years)</option>
+                <option value="child_3_8">Early School (3–8 years)</option>
+                <option value="adolescent_8_16">Adolescent (8–16 years)</option>
+                <option value="adult_18_39">Adult (18–39 years)</option>
+                <option value="adult_40_64">Adult (40–64 years)</option>
+                <option value="adult_65_plus" selected>Adult (65+ years)</option>
               </select>
             </div>
 

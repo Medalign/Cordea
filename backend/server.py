@@ -313,7 +313,7 @@ def audit_dump(authorization: Optional[str] = Header(default=None)):
 
 
 # ============================================================
-#   NEW ENDPOINT — /ai/narrative (UPDATED)
+#   NEW ENDPOINT â€” /ai/narrative (UPDATED)
 # ============================================================
 @app.post("/ai/narrative", response_model=NarrativeResponse)
 def ai_narrative(

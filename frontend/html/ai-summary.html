@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cordea — AI Summary</title>
+  <title>Cordea - AI Summary</title>
   <link rel="stylesheet" href="../css/styles.css">
   <link rel="stylesheet" href="../css/ai-summary.css">
 </head>
@@ -23,7 +23,7 @@
           <button id="health-retry" class="btn btn-secondary btn-small">Retry</button>
         </div>
 
-        <button id="theme-toggle" class="theme-toggle">🌙 Dark</button>
+        <button id="theme-toggle" class="theme-toggle">ðŸŒ™ Dark</button>
       </div>
     </header>
 
@@ -78,7 +78,7 @@
       <main class="main">
         <div class="heading-row">
           <div>
-            <h1 class="main__heading">AI ECG Summary — QTc Context</h1>
+            <h1 class="main__heading">AI ECG Summary - QTc Context</h1>
             <p class="main__desc">Generate a structured narrative combining interval analysis and trend data for documentation and teaching</p>
           </div>
           <button id="info-toggle" class="info-toggle-btn" aria-label="Show how this works" title="Show how this works">
@@ -112,12 +112,15 @@
           <form id="ai-summary-form" class="grid grid--two">
             <div class="form-group">
               <label class="form-label" for="ai-age-band">Age band (for narrative phrasing)</label>
-              <select id="ai-age-band" class="form-select">
-                <option>6–12 years</option>
-                <option>13–17 years</option>
-                <option>18–39 years</option>
-                <option>40–64 years</option>
-                <option selected>65+ years</option>
+                            <select id="ai-age-band" class="form-select">
+                <option value="neonate_0_7">Neonate (0–7 days)</option>
+                <option value="infant_1wk_1yr">Infant (1 wk – 1 yr)</option>
+                <option value="toddler_1_3">Toddler (1–3 years)</option>
+                <option value="child_3_8">Early School (3–8 years)</option>
+                <option value="adolescent_8_16">Adolescent (8–16 years)</option>
+                <option value="adult_18_39">Adult (18–39 years)</option>
+                <option value="adult_40_64">Adult (40–64 years)</option>
+                <option value="adult_65_plus" selected>Adult (65+ years)</option>
               </select>
             </div>
 
@@ -154,27 +157,27 @@
             <div class="source-grid">
               <div class="source-item">
                 <span class="source-label">QTc (ms)</span>
-                <span class="source-value" id="source-qtc">—</span>
+                <span class="source-value" id="source-qtc">-</span>
               </div>
               <div class="source-item">
                 <span class="source-label">Percentile</span>
-                <span class="source-value" id="source-percentile">—</span>
+                <span class="source-value" id="source-percentile">-</span>
               </div>
               <div class="source-item">
                 <span class="source-label">HR (bpm)</span>
-                <span class="source-value" id="source-hr">—</span>
+                <span class="source-value" id="source-hr">-</span>
               </div>
               <div class="source-item">
                 <span class="source-label">PR (ms)</span>
-                <span class="source-value" id="source-pr">—</span>
+                <span class="source-value" id="source-pr">-</span>
               </div>
               <div class="source-item">
                 <span class="source-label">QRS (ms)</span>
-                <span class="source-value" id="source-qrs">—</span>
+                <span class="source-value" id="source-qrs">-</span>
               </div>
               <div class="source-item">
                 <span class="source-label">QT (ms)</span>
-                <span class="source-value" id="source-qt">—</span>
+                <span class="source-value" id="source-qt">-</span>
               </div>
             </div>
           </div>
@@ -213,14 +216,14 @@
                 </div>
                 <div class="caution-content">
                   <h4 class="caution-title">Caution Flags</h4>
-                  <p id="caution-text" class="caution-text">—</p>
+                  <p id="caution-text" class="caution-text">-</p>
                 </div>
               </div>
             </div>
 
             <div class="disclaimer-card">
               <p id="disclaimer-text" class="disclaimer-text">
-                <strong>DEMONSTRATION ONLY</strong> — This summary uses synthetic data and is for Design/UX purposes only.
+                <strong>DEMONSTRATION ONLY</strong> - This summary uses synthetic data and is for Design/UX purposes only.
                 Not for clinical use. All outputs should be validated by qualified healthcare professionals.
               </p>
             </div>

@@ -43,14 +43,14 @@ function loadPatientReviewData() {
     if (payloadJSON && resultJSON) {
       window._lastGuardrailPayload = JSON.parse(payloadJSON);
       window._lastGuardrailResult = JSON.parse(resultJSON);
-      console.log("✅ Loaded Patient Review data from localStorage");
+      console.log("âœ… Loaded Patient Review data from localStorage");
       return true;
     } else {
-      console.log("⚠️ No Patient Review data found in localStorage");
+      console.log("âš ï¸ No Patient Review data found in localStorage");
       return false;
     }
   } catch (err) {
-    console.error("❌ Failed to load from localStorage:", err);
+    console.error("âŒ Failed to load from localStorage:", err);
     return false;
   }
 }
@@ -72,11 +72,11 @@ if (infoToggleBtn && infoCard) {
 
 // ===== INITIALIZE =====
 function initializeAISummary() {
-  // ✅ NEW: Load data from localStorage (from separate pages)
+  // âœ… NEW: Load data from localStorage (from separate pages)
   const hasData = loadPatientReviewData();
 
   if (!hasData) {
-    console.log("⚠️ No Patient Review data available. User must run Patient Review first.");
+    console.log("âš ï¸ No Patient Review data available. User must run Patient Review first.");
   }
 
   // Pre-populate age/sex if available from Patient Review
@@ -127,7 +127,7 @@ async function handleAIGenerate(event) {
     return;
   }
 
-  const ageEnum = mapAgeBandToEnum(ageLabel);
+  const ageEnum = ageLabel; // Value from dropdown is already correct key
 
   // Build payload from Patient Review data
   const intervals = window._lastGuardrailPayload.intervals || {};
@@ -175,7 +175,7 @@ async function handleAIGenerate(event) {
   } catch (err) {
     showMsg(aiError, extractErrorMessage(err));
   } finally {
-    setBusySuccess(aiGenerateBtn, "✓ Summary generated");
+    setBusySuccess(aiGenerateBtn, "âœ“ Summary generated");
   }
 }
 

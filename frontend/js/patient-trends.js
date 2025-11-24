@@ -180,7 +180,7 @@ async function handleTrendSubmit(event) {
   event.preventDefault();
   clearMsg(trendError);
 
-  const ageBand = mapAgeBandToEnum(trendAgeSelect.value);
+  const ageBand = trendAgeSelect.value;
   const sex = trendSexSelect.value;
   const newDate = trendDateInput.value.trim();
   const newQt = parseFloat(trendQtInput.value);

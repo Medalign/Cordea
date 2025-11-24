@@ -47,7 +47,7 @@ function getRiskCategory(qtc, sex) {
 
 // ===== DEMO DATA =====
 function loadAdultDemo() {
-  document.getElementById("age_band_select").value = "65+ years";
+  document.getElementById("age_band_select").value = "adult_65_plus";
   document.getElementById("sex_select").value = "male";
   document.getElementById("heart_rate_input").value = "72";
   document.getElementById("pr_ms_input").value = "160";
@@ -75,7 +75,7 @@ async function handleGuardrailSubmit(event) {
   clearContainer(guardrailResult);
 
   const formData = new FormData(guardrailForm);
-  const ageBand = mapAgeBandToEnum(formData.get("age_band"));
+  const ageBand = formData.get("age_band");
   const sex = formData.get("sex");
   const qtcMethod = formData.get("qtc_method") || "fridericia";
 
@@ -102,7 +102,7 @@ async function handleGuardrailSubmit(event) {
     window._lastGuardrailPayload = payload;
     window._lastGuardrailResult = result;
 
-    // ✅ NEW: Save to localStorage for AI Summary page
+    // âœ… NEW: Save to localStorage for AI Summary page
     try {
       localStorage.setItem('cordea_last_guardrail_payload', JSON.stringify(payload));
       localStorage.setItem('cordea_last_guardrail_result', JSON.stringify(result));
@@ -290,7 +290,7 @@ function renderGuardrailResult(result, ageBand, sex) {
       const paramName = document.createElement("div");
       paramName.className = "param-name";
 
-      // ✅ FIXED: Use param.metric instead of param.name
+      // âœ… FIXED: Use param.metric instead of param.name
       const nameText = param.metric.replace("_", " ");
 
       paramName.innerHTML = `
@@ -301,7 +301,7 @@ function renderGuardrailResult(result, ageBand, sex) {
         </span>
       `;
 
-      // ✅ FIXED: Get value from stored payload instead of param.value
+      // âœ… FIXED: Get value from stored payload instead of param.value
       const metricValue = window._lastGuardrailPayload?.intervals?.[param.metric] || null;
 
       const paramValue = document.createElement("div");
